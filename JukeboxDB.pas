@@ -114,6 +114,11 @@ begin
     DbQuery.Free;
     DbTrans.Free;
     DbConnection.Free;
+	
+	DbTrans := nil;
+	DbQuery := nil;
+	DbConnection := nil;
+	
     DidClose := true;
   end;
   Close := DidClose;
@@ -146,7 +151,7 @@ end;
 
 procedure TJukeboxDB.Leave;
 begin
-  DbConnection.Close;
+  Close;
 end;
 
 //*******************************************************************************
