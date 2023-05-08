@@ -565,7 +565,13 @@ begin
       writeLn('no creds file (' + CredsFilePath + ')');
     end;
 
+    if DebugMode then begin
+      writeLn('completed processing of creds file');
+    end;
+
     Command := Args.GetStringValue(ARG_COMMAND);
+
+    writeLn('retrieved ARG_COMMAND');
 
     HelpCommands := TStringSet.Create;
     HelpCommands.Add(CMD_HELP);
@@ -607,10 +613,13 @@ begin
     UpdateCommands.Add(CMD_IMPORT_ALBUM_ART);
     UpdateCommands.Add(CMD_INIT_STORAGE);
 
+    writeLn('merging all commands to AllCommands');
     AllCommands := TStringSet.Create;
     AllCommands.Append(HelpCommands);
     AllCommands.Append(NonHelpCommands);
     AllCommands.Append(UpdateCommands);
+
+    writeLn('checking commands');
 
     if not AllCommands.Contains(Command) then begin
       writeLn('Unrecognized command ' + Command);
