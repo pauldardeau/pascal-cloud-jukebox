@@ -71,7 +71,7 @@ begin
       Md5Exe := Kvp.GetValue(KeyExe);
       if not JBFileExists(Md5Exe) then begin
         writeLn('error: md5 executable not found: ' + Md5Exe);
-		Kvp.Free;
+        Kvp.Free;
         JBMd5ForFile := '';
         exit;
       end;
@@ -107,15 +107,15 @@ begin
               FirstLine := FileLines[0];
               LineFields := FirstLine.Split(' ');
               if Length(LineFields) > 0 then begin
-			    Kvp.Free;
-				ProgramArgs.Free;
+                Kvp.Free;
+                ProgramArgs.Free;
                 JBMd5ForFile := LineFields[FieldNumber-1];
                 exit;
               end
               else begin
                 if FirstLine.Length > 0 then begin
-				  Kvp.Free;
-				  ProgramArgs.Free;
+                  Kvp.Free;
+                  ProgramArgs.Free;
                   JBMd5ForFile := FirstLine;
                   exit;
                 end
@@ -139,8 +139,8 @@ begin
       else begin
         writeLn('error: Md5ForFile - unable to execute md5 sum utility ' + Md5Exe);
       end;
-	  
-	  ProgramArgs.Free;
+  
+      ProgramArgs.Free;
     end
     else begin
       writeLn('error: Md5ForFile - no value present for ' + KeyExe);
@@ -190,8 +190,8 @@ begin
     end;
   finally
     if Reader <> nil then begin
-	  Reader.Free;
-	end;
+      Reader.Free;
+    end;
   end;
 end;
 

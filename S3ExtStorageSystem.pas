@@ -182,7 +182,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   ListAccountContainers := ListOfContainers;
@@ -240,7 +240,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   CreateContainer := ContainerCreated;
@@ -277,7 +277,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   DeleteContainer := ContainerDeleted;
@@ -318,7 +318,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   ListContainerContents := ListObjects;
@@ -363,7 +363,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   GetObjectMetadata := Success;
@@ -519,7 +519,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   PutObjectFromFile := ObjectAdded;
@@ -559,7 +559,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   DeleteObject := ObjectDeleted;
@@ -611,7 +611,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
-	Kvp.Free;
+    Kvp.Free;
   end;
 
   if Success and JBFileExists(LocalFilePath) then begin
@@ -687,8 +687,8 @@ begin
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
-	  FileLines.Free;
-	  FileLines := nil;
+      FileLines.Free;
+      FileLines := nil;
       writeLn('RunProgram: unable to read file ' +
               ProgramPath);
       RunProgram := false;
@@ -702,8 +702,8 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-	FileLines.Free;
-	FileLines := nil;
+    FileLines.Free;
+    FileLines := nil;
     IsShellScript := true;
   end;
 
@@ -783,8 +783,8 @@ begin
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
-	  FileLines.Free;
-	  FileLines := nil;
+      FileLines.Free;
+      FileLines := nil;
       writeLn('RunProgram: unable to read file ' +
               ProgramPath);
       RunProgram := false;
@@ -798,8 +798,8 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-	FileLines.Free;
-	FileLines := nil;
+    FileLines.Free;
+    FileLines := nil;
     IsShellScript := true;
   end;
 
@@ -859,8 +859,8 @@ begin
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
-	  FileLines.Free;
-	  FileLines := nil;
+      FileLines.Free;
+      FileLines := nil;
       writeLn('RunProgram: unable to read file ' +
               ProgramPath);
       RunProgram := false;
@@ -874,8 +874,8 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-	FileLines.Free;
-	FileLines := nil;
+    FileLines.Free;
+    FileLines := nil;
     IsShellScript := true;
   end;
 

@@ -19,7 +19,7 @@ type
 
   public
     constructor Create;
-	destructor Destroy; override;
+    destructor Destroy; override;
   end;
 
 //*******************************************************************************

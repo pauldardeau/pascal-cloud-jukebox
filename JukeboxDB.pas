@@ -21,7 +21,7 @@ type
 
   public
     constructor Create(aMetadataDbFilePath: String; aDebugPrint: Boolean);
-	destructor Destroy; override;
+    destructor Destroy; override;
     function IsOpen: Boolean;
     function Open: Boolean;
     function Close: Boolean;
@@ -114,11 +114,11 @@ begin
     DbQuery.Free;
     DbTrans.Free;
     DbConnection.Free;
-	
-	DbTrans := nil;
-	DbQuery := nil;
-	DbConnection := nil;
-	
+
+    DbTrans := nil;
+    DbQuery := nil;
+    DbConnection := nil;
+
     DidClose := true;
   end;
   Close := DidClose;

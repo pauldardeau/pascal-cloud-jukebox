@@ -95,7 +95,7 @@ type
                        StorageSys: TStorageSystem;
                        aContainerPrefix: String;
                        aDebugPrint: Boolean);
-	destructor Destroy; override;
+    destructor Destroy; override;
     procedure InstallSignalHandlers;
     function IsExitRequested: Boolean; override;
     function Enter: Boolean;
@@ -277,27 +277,27 @@ begin
   
   if JukeboxDb <> nil then begin
     JukeboxDb.Free;
-	JukeboxDb := nil;
+    JukeboxDb := nil;
   end;
   
   //SongList: TListSongMetadata;
   
   if AudioPlayerProcess <> nil then begin
     if AudioPlayerProcess.Running then begin
-    AudioPlayerProcess.Terminate(5);
-	end;
-	AudioPlayerProcess.Free;
-	AudioPlayerProcess := nil;
+      AudioPlayerProcess.Terminate(5);
+    end;
+    AudioPlayerProcess.Free;
+    AudioPlayerProcess := nil;
   end;
   
   if SongDownloaderThread <> nil then begin
     SongDownloaderThread.Free;
-	SongDownloaderThread := nil;
+    SongDownloaderThread := nil;
   end;
   
   if SongList <> nil then begin
     SongList.Free;
-	SongList := nil;
+    SongList := nil;
   end;
 
   inherited;
@@ -407,8 +407,8 @@ begin
     JukeboxDb := TJukeboxDB.Create(GetMetadataDbFilePath, DebugPrint);
     EnterSuccess := JukeboxDb.Enter;
     if not EnterSuccess then begin
-	  JukeboxDb.Free;
-	  JukeboxDb := nil;
+      JukeboxDb.Free;
+      JukeboxDb := nil;
       writeLn('unable to connect to database');
     end;
   end
@@ -430,7 +430,7 @@ procedure TJukebox.Leave;
 begin
   if JukeboxDb <> nil then begin
     JukeboxDb.Leave;
-	JukeboxDb.Free;
+    JukeboxDb.Free;
     JukeboxDb := nil;
   end;
 end;
@@ -445,7 +445,7 @@ begin
     //if AudioPlayerProcess <> nil then begin
     //  // capture current song position (seconds into song)
     //  AudioPlayerProcess.Stop;
-	//  AudioPlayerProcess.Free;
+    //  AudioPlayerProcess.Free;
     //  AudioPlayerProcess := nil;
     //end;
   end
@@ -531,8 +531,8 @@ begin
       else begin
         StoreSuccess := true; // no insert or update needed (already up-to-date)
       end;
-	  DbSong.Free;
-	  DbSong := nil;
+      DbSong.Free;
+      DbSong := nil;
     end
     else begin
       // song is not in the database, insert it
@@ -582,7 +582,7 @@ begin
 
   ContainerForSong := ContainerPrefix +
                       ArtistLetter.ToLower +
-					  SFX_SONG_CONTAINER;
+                      SFX_SONG_CONTAINER;
 end;
 
 //*******************************************************************************
@@ -625,8 +625,8 @@ begin
 
     DirListing := JBListFilesInDirectory(SongImportDirPath);
     if DirListing.Count = 0 then begin
-	  DirListing.Free;
-	  DirListing := nil;
+      DirListing.Free;
+      DirListing := nil;
       exit;
     end;
 
@@ -733,7 +733,7 @@ begin
                     writeLn('unable to store metadata, deleting obj "' +
                             fsSong.Fm.ObjectName + '"');
                     StorageSystem.DeleteObject(ContainerName,
-					                           fsSong.Fm.ObjectName);
+                                               fsSong.Fm.ObjectName);
                   end
                   else begin
                     inc(FileImportCount);
@@ -745,11 +745,11 @@ begin
                 end;
               end;
             end;
-			
-			if FileContents <> nil then begin
-			  FileContents.Free;
-			  FileContents := nil;
-			end;
+
+            if FileContents <> nil then begin
+              FileContents.Free;
+              FileContents := nil;
+            end;
           end;
 
           if not DebugPrint then begin
@@ -772,9 +772,9 @@ begin
         end;
       end;
     end;  // for each file in import directory
-	
-	DirListing.Free;
-	DirListing := nil;
+
+    DirListing.Free;
+    DirListing := nil;
 
     if not DebugPrint then begin
       {
@@ -1032,7 +1032,7 @@ begin
       for i := 0 to Length(Args)-1 do begin
         AudioPlayerProcess.Parameters.Add(Args[i]);
       end;
-	  
+  
       AudioPlayerProcess.Options := AudioPlayerProcess.Options + [poWaitOnExit];
       AudioPlayerProcess.Execute;
       ExitCode := AudioPlayerProcess.ExitCode;
@@ -1084,7 +1084,7 @@ begin
   DirListing := JBListFilesInDirectory(SongPlayDirPath);
   if DirListing.Count = 0 then begin
     DirListing.Free;
-	DirListing := nil;
+    DirListing := nil;
     // log error
     exit;
   end;
@@ -1121,7 +1121,7 @@ begin
         if not JBFileExists(FilePath) then begin
           DlSongs.Add(si);
           if DlSongs.Count >= FileCacheCount then begin
-            break
+            break;
           end;
         end;
       end;
@@ -1191,27 +1191,27 @@ begin
           end;
           if aSongList.Count = ListTrackObjects.Count then begin
             HaveSongs := true;
-			if SongList <> nil then begin
-			  SongList.Free;
-			  SongList := nil;
-			end;
+            if SongList <> nil then begin
+              SongList.Free;
+              SongList := nil;
+            end;
             SongList := aSongList;
           end;
         end;
       end
-	  else begin
-	    aSongList.Free;
-		aSongList := nil;
-		ListTrackObjects.Free;
-		ListTrackObjects := nil;
-	  end;
+      else begin
+        aSongList.Free;
+        aSongList := nil;
+        ListTrackObjects.Free;
+        ListTrackObjects := nil;
+      end;
     end;
 
     if not HaveSongs then begin
-	  if SongList <> nil then begin
-	    SongList.Free;
-		SongList := nil;
-	  end;
+      if SongList <> nil then begin
+        SongList.Free;
+        SongList := nil;
+      end;
       SongList := JukeboxDb.RetrieveSongs(Artist, Album);
     end;
 
@@ -1261,7 +1261,7 @@ begin
   kvpAudioPlayer := TKeyValuePairs.Create;
   if not iniReader.ReadSection(osIdentifier, kvpAudioPlayer) then begin
     kvpAudioPlayer.Free;
-	iniReader.Free;
+    iniReader.Free;
     writeLn('error: no config section present for ' + osIdentifier);
     exit;
   end;
@@ -1286,7 +1286,7 @@ begin
     if AudioPlayerExeFileName.Length = 0 then begin
       writeLn('error: no value given for ' + key + ' within [' +
               osIdentifier + ']');
-	  kvpAudioPlayer.Free;
+      kvpAudioPlayer.Free;
       exit;
     end;
 
@@ -1297,7 +1297,7 @@ begin
   else begin
     writeLn('error: ' + AUDIO_INI_FILE_NAME + ' missing value for ' +
             key + ' within [' + osIdentifier + ']');
-	kvpAudioPlayer.Free;
+    kvpAudioPlayer.Free;
     exit;
   end;
 
@@ -1317,7 +1317,7 @@ begin
     if AudioPlayerCommandArgs.Length = 0 then begin
       writeLn('error: no value given for ' + key + ' within [' +
               osIdentifier + ']');
-	  kvpAudioPlayer.Free;
+      kvpAudioPlayer.Free;
       exit;
     end;
 
@@ -1326,14 +1326,14 @@ begin
     if posPlaceholder = -1 then begin
       writeLn('error: ' + key + ' value does not contain placeholder ' +
               placeholder);
-	  kvpAudioPlayer.Free;
+      kvpAudioPlayer.Free;
       exit;
     end;
   end
   else begin
     writeLn('error: ' + AUDIO_INI_FILE_NAME + ' missing value for ' +
             key + ' within [' + osIdentifier + ']');
-	kvpAudioPlayer.Free;
+    kvpAudioPlayer.Free;
     exit;
   end;
 
@@ -1379,7 +1379,7 @@ var
 begin
   if SongList <> nil then begin
     SongList.Free;
-	SongList := nil;
+    SongList := nil;
   end;
   
   SongList := aSongList;
@@ -1579,11 +1579,11 @@ begin
       else begin
         writeLn('error: unable to read metadata db file');
       end;
-	  
-	  if DbFileContents <> nil then begin
-	    DbFileContents.Free;
-		DbFileContents := nil;
-	  end;
+  
+      if DbFileContents <> nil then begin
+        DbFileContents.Free;
+        DbFileContents := nil;
+      end;
 
       if DebugPrint then begin
         if MetadataDbUpload then
@@ -1618,8 +1618,8 @@ begin
       FileImportCount := 0;
       DirListing := JBListFilesInDirectory(PlaylistImportDirPath);
       if DirListing.Count = 0 then begin
-	    DirListing.Free;
-		DirListing := nil;
+        DirListing.Free;
+        DirListing := nil;
         writeLn('no playlists found');
         exit;
       end;
@@ -1640,7 +1640,7 @@ begin
         FileName := DirListing[i];
         FullPath := JBPathJoin(PlaylistImportDirPath, FileName);
         ObjectName := FileName;
-		FileContents := nil;
+        FileContents := nil;
         FileRead := ReadFileContents(FullPath, FileContents);
         if FileRead then begin
           if StorageSystem.PutObject(PlaylistContainer,
@@ -1659,14 +1659,14 @@ begin
             end;
           end;
         end;
-		if FileContents <> nil then begin
-		  FileContents.Free;
-		  FileContents := nil;
-		end;
+        if FileContents <> nil then begin
+          FileContents.Free;
+          FileContents := nil;
+        end;
       end;
-	  
-	  DirListing.Free;
-	  DirListing := nil;
+  
+      DirListing.Free;
+      DirListing := nil;
 
       if FileImportCount > 0 then begin
         writeLn(IntToStr(FileImportCount) + ' playlists imported');
@@ -1884,8 +1884,8 @@ begin
       end;
       }
       FileExtensions.Free;
-	  FileExtensions := nil;
-	end
+      FileExtensions := nil;
+    end
     else begin
       writeLn('Playlist json file is empty');
     end;
@@ -2030,8 +2030,8 @@ begin
         UploadMetadataDb;
         IsDeleted := true;
       end;
-	  TheSongList.Free;
-	  TheSongList := nil;
+      TheSongList.Free;
+      TheSongList := nil;
     end;
   end;
 
@@ -2089,8 +2089,8 @@ begin
                     ' album name=' + AlbumName);
           end;
         end;
-		ListAlbumSongs.Free;
-		ListAlbumSongs := nil;
+        ListAlbumSongs.Free;
+        ListAlbumSongs := nil;
       end;
     end;
   end
@@ -2141,8 +2141,8 @@ begin
       FileImportCount := 0;
       DirListing := JBListFilesInDirectory(AlbumArtImportDirPath);
       if DirListing.Count = 0 then begin
-	    DirListing.Free;
-		DirListing := nil;
+        DirListing.Free;
+        DirListing := nil;
         writeLn('no album art found');
         exit;
       end;
@@ -2174,10 +2174,10 @@ begin
             inc(FileImportCount);
           end;
         end;
-		if FileContents <> nil then begin
-		  FileContents.Free;
-		  FileContents := nil;
-		end;
+        if FileContents <> nil then begin
+          FileContents.Free;
+          FileContents := nil;
+        end;
       end;
 
       if FileImportCount > 0 then begin

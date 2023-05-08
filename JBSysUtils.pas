@@ -174,7 +174,7 @@ begin
       on E: Exception do begin
         Success := false;
         writeln('Unable to write text to file. Details: ',
-		        E.ClassName, ': ', E.Message);
+                E.ClassName, ': ', E.Message);
       end;
     end;
   finally

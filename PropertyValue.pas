@@ -26,7 +26,7 @@ type
     constructor Create(aBoolValue: Boolean);
     constructor Create(aStringValue: String);
     constructor Create(aDoubleValue: Double);
-	destructor Destroy; override;
+    destructor Destroy; override;
 
     function IsInt: Boolean;
     function IsLong: Boolean;

@@ -76,13 +76,13 @@ type
     Playlist: String;
     DebugMode: Boolean;
     Directory: String;
-	JukeboxOptions: TJukeboxOptions;
-	Jukebox: TJukebox;
-	StorageSystem: TStorageSystem;
+    JukeboxOptions: TJukeboxOptions;
+    Jukebox: TJukebox;
+    StorageSystem: TStorageSystem;
 
   public
     constructor Create;
-	destructor Destroy; override;
+    destructor Destroy; override;
     //function ConnectFsSystem(Credentials: TPropertySet;
     //                         Prefix: String): TStorageSystem;
     function ConnectS3System(Credentials: TPropertySet;
@@ -121,18 +121,18 @@ begin
   if Jukebox <> nil then begin
     Jukebox.Leave;
     Jukebox.Free;
-	Jukebox := nil;
+    Jukebox := nil;
   end;
   
   if JukeboxOptions <> nil then begin
     JukeboxOptions.Free;
-	JukeboxOptions := nil;
+    JukeboxOptions := nil;
   end;
   
   if StorageSystem <> nil then begin
     StorageSystem.Leave;
-	StorageSystem.Free;
-	StorageSystem := nil;
+    StorageSystem.Free;
+    StorageSystem := nil;
   end;
   
   inherited;
@@ -585,16 +585,16 @@ begin
     if not SupportedSystems.Contains(Storage) then begin
       writeLn('error: invalid storage type ' + Storage);
       writeLn('supported systems are: ' + SupportedSystems.ToString);
-	  SupportedSystems.Free;
-	  SupportedSystems := nil;
-	  Args.Free;
+      SupportedSystems.Free;
+      SupportedSystems := nil;
+      Args.Free;
       Run := 1;
       exit;
     end
     else begin
-	  SupportedSystems.Free;
-	  SupportedSystems := nil;
-	  
+      SupportedSystems.Free;
+      SupportedSystems := nil;
+  
       if DebugMode then begin
         writeLn('setting storage system to ' + Storage);
       end;
@@ -674,9 +674,9 @@ begin
     end;
 
     Command := Args.GetStringValue(ARG_COMMAND);
-	
-	Args.Free;
-	Args := nil;
+
+    Args.Free;
+    Args := nil;
 
     HelpCommands := TStringSet.Create;
     HelpCommands.Add(CMD_HELP);
@@ -727,11 +727,11 @@ begin
     writeLn('checking commands');
 
     if not AllCommands.Contains(Command) then begin
-	  if Creds <> nil then begin
-	    Creds.Free;
-		Creds := nil;
-	  end;
-	  
+      if Creds <> nil then begin
+        Creds.Free;
+        Creds := nil;
+      end;
+  
       writeLn('Unrecognized command ' + Command);
       writeLn('');
       ShowUsage;
@@ -757,8 +757,8 @@ begin
         StorageSystem := ConnectStorageSystem(StorageType,
                                               Creds,
                                               ContainerPrefix);
-		Creds.Free;
-		Creds := nil;
+        Creds.Free;
+        Creds := nil;
 
         if StorageSystem = nil then begin
           writeLn('error: unable to connect to storage system');
@@ -788,15 +788,15 @@ begin
                               ContainerPrefix,
                               DebugMode);
         if jb.Enter then begin
-		  // the jukebox instance is now assigned to instance variable of JukeboxMain
-		  // and is now owned by JukeboxMain
-		  Jukebox := jb;
-		  jb := nil;
+          // the jukebox instance is now assigned to instance variable of JukeboxMain
+          // and is now owned by JukeboxMain
+          Jukebox := jb;
+          jb := nil;
           ExitCode := RunJukeboxCommand(Command);
         end
         else begin
-		  jb.Free;
-		  jb := nil;
+          jb.Free;
+          jb := nil;
           writeLn('error: unable to enter jukebox');
           ExitCode := 1;
         end;
@@ -805,7 +805,7 @@ begin
   end
   else begin
     Args.Free;
-	Args := nil;
+    Args := nil;
     writeLn('Error: no command given');
     ShowUsage;
   end;
