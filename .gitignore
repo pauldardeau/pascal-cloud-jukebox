@@ -1,0 +1,3 @@
+*.o
+*.ppu
+jukebox_db.sqlite3
