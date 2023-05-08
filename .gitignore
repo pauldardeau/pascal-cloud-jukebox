@@ -2,3 +2,5 @@
 *.ppu
 jukebox_db.sqlite3
 pas-cloud-jukebox
+s3_creds.txt
+audio_player.ini
