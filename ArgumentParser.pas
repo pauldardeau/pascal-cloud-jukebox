@@ -149,7 +149,7 @@ begin
   while Working do
   begin
     Arg := Args[I];
-    if DictAllReservedWords.ContainsKey(Arg) then begin
+    if DictAllReservedWords.IndexOf(Arg) <> -1 then begin
       ArgType := DictAllReservedWords[Arg];
       Arg := Arg.Substring(2);
       if ArgType = TYPE_BOOL_VALUE then begin
@@ -162,12 +162,13 @@ begin
         inc(I);
         if I < NumArgs then begin
           NextArg := Args[I];
-          IntValue := Convert.TryToInt32(NextArg);
-          if IntValue <> nil then begin
+          try
+            IntValue := StrToInt(NextArg);
             if DebugMode then begin
               writeLn('ArgumentParser: adding key={0} value={1}', Arg, IntValue);
             end;
             ps.Add(Arg, TPropertyValue.Create(IntValue));
+          except
           end;
         end
         else begin

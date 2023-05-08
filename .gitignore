@@ -1,3 +1,4 @@
 *.o
 *.ppu
 jukebox_db.sqlite3
+pas-cloud-jukebox

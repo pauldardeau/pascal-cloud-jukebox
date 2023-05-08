@@ -5,7 +5,9 @@ unit JukeboxMain;
 interface
 
 uses
-  Classes, JBSysUtils, Jukebox, PropertySet, StorageSystem, SysUtils;
+  Classes, JBSysUtils, Jukebox, PropertySet, StorageSystem, SysUtils,
+  S3ExtStorageSystem, StringSet, ArgumentParser, JukeboxOptions,
+  PropertyValue;
 
 const
   ARG_PREFIX           = '--';
@@ -77,8 +79,8 @@ type
 
   public
     constructor Create;
-    function ConnectFsSystem(Credentials: TPropertySet;
-                             Prefix: String): TStorageSystem;
+    //function ConnectFsSystem(Credentials: TPropertySet;
+    //                         Prefix: String): TStorageSystem;
     function ConnectS3System(Credentials: TPropertySet;
                              Prefix: String): TStorageSystem;
     function ConnectStorageSystem(SystemName: String;
@@ -105,9 +107,9 @@ begin
 end;
 
 //*******************************************************************************
-
+{
 function TJukeboxMain.ConnectFsSystem(Credentials: TPropertySet;
-                                      Prefix: String): StorageSystem;
+                                      Prefix: String): TStorageSystem;
 var
   RootDir: String;
 begin
@@ -126,11 +128,11 @@ begin
     exit;
   end;
 end;
-
+}
 //*******************************************************************************
 
 function TJukeboxMain.ConnectS3System(Credentials: TPropertySet;
-                                      Prefix: String): StorageSystem;
+                                      Prefix: String): TStorageSystem;
 var
   theEndpointUrl: String;
   theRegion: String;
@@ -153,22 +155,22 @@ begin
     end;
   end;
 
-  exit new S3ExtStorageSystem(theEndpointUrl,
-                              theRegion,
-                              Directory,
-                              DebugMode);
+  ConnectS3System := TS3ExtStorageSystem.Create(theEndpointUrl,
+                                                theRegion,
+                                                Directory,
+                                                DebugMode);
 end;
 
 //*******************************************************************************
 
 function TJukeboxMain.ConnectStorageSystem(SystemName: String;
                                            Credentials: TPropertySet;
-                                           Prefix: String): StorageSystem;
+                                           Prefix: String): TStorageSystem;
 begin
-  if SystemName = SS_FS then begin
-    ConnectStorageSystem := ConnectFsSystem(Credentials, Prefix);
-  end
-  else if (SystemName = SS_S3) or (SystemName= 's3ext') then begin
+  //if SystemName = SS_FS then begin
+  //  ConnectStorageSystem := ConnectFsSystem(Credentials, Prefix);
+  //end
+  if (SystemName = SS_S3) or (SystemName= 's3ext') then begin
     ConnectStorageSystem := ConnectS3System(Credentials, Prefix);
   end
   else begin
@@ -179,14 +181,14 @@ end;
 
 //*******************************************************************************
 
-function TJukeboxMain.InitStorageSystem(StorageSys: StorageSystem;
+function TJukeboxMain.InitStorageSystem(StorageSys: TStorageSystem;
                                         ContainerPrefix: String): Boolean;
 var
   Success: Boolean;
 begin
-  if Jukebox.InitializeStorageSystem(StorageSys,
-                                     ContainerPrefix,
-                                     DebugMode) then begin
+  if TJukebox.InitializeStorageSystem(StorageSys,
+                                      ContainerPrefix,
+                                      DebugMode) then begin
     writeLn('storage system successfully initialized');
     Success := true;
   end
@@ -395,7 +397,7 @@ begin
     jukebox.ImportAlbumArt;
   end;
 
-  exit ExitCode;
+  RunJukeboxCommand := ExitCode;
 end;
 
 //*******************************************************************************
@@ -426,6 +428,8 @@ var
   FileLines: TStringArray;
   FileLine: String;
   LineTokens: TStringArray;
+  i: Integer;
+  FileCacheCount: Integer;
 begin
   ExitCode := 0;
   StorageType := SS_FS;
@@ -434,7 +438,7 @@ begin
   Song := '';
   Playlist := '';
 
-  OptParser := TArgumentParser.Create;
+  OptParser := TArgumentParser.Create(true);
   OptParser.AddOptionalBoolFlag(ARG_PREFIX+ARG_DEBUG, 'run in debug mode');
   OptParser.AddOptionalIntArgument(ARG_PREFIX+ARG_FILE_CACHE_COUNT, 'number of songs to buffer in cache');
   OptParser.AddOptionalBoolFlag(ARG_PREFIX+ARG_INTEGRITY_CHECKS, 'check file integrity after download');
@@ -533,8 +537,8 @@ begin
       end;
 
       FileContents := JBFileReadAllText(CredsFilePath);
-      if (FileContents <> nil) and (FileContents.Length > 0) then begin
-        FileLines := FileContents.Split(Environment.LineBreak);
+      if FileContents.Length > 0 then begin
+        FileLines := FileContents.Split(LineEnding);
 
         for i := 0 to Length(FileLines)-1 do begin
           FileLine := FileLines[i];
@@ -543,7 +547,7 @@ begin
             Key := LineTokens[0].Trim;
             Value := LineTokens[1].Trim;
             if (Key.Length > 0) and (Value.Length > 0) then begin
-              Creds.Add(Key, new PropertyValue(Value));
+              Creds.Add(Key, TPropertyValue.Create(Value));
               if Key = CREDS_CONTAINER_PREFIX then begin
                 ContainerPrefix := Value;
               end;

@@ -38,6 +38,7 @@ function JBGetFileExtension(FileName: String): String;
 function JBCreateDirectory(DirPath: String): Boolean;
 procedure JBDeleteFilesInDirectory(DirPath: String);
 function JBGetPid(): Integer;
+function JBGetCurrentDirectory(): String;
 
 
 //*******************************************************************************
@@ -410,6 +411,17 @@ end;
 function JBGetPid(): Integer;
 begin
   JBGetPid := GetProcessId;
+end;
+
+//*******************************************************************************
+
+function JBGetCurrentDirectory(): String;
+var
+  s: String;
+begin
+  s := '';
+  GetDir(0, s);
+  JBGetCurrentDirectory := s;
 end;
 
 //*******************************************************************************

@@ -154,52 +154,56 @@ type
 implementation
 
 //*******************************************************************************
-{
-class function Jukebox.InitializeStorageSystem(StorageSys: StorageSystem;
-                                               aContainerPrefix: String;
-                                               aDebugPrint: Boolean): Boolean;
+
+class function TJukebox.InitializeStorageSystem(StorageSys: TStorageSystem; aContainerPrefix: String; aDebugPrint: Boolean): Boolean;
 var
   ArtistSongChars: String;
+  i: Integer;
+  ch: Char;
+  ContainerName: String;
+  ContainerNames: TStringList;
+  CnrName: String;
 begin
   // create the containers that will hold songs
   ArtistSongChars := '0123456789abcdefghijklmnopqrstuvwxyz';
 
-  for i := 0 to ArtistSongChars.Length-1 do begin
-    const ch = ArtistSongChars[i];
-    const ContainerName = aContainerPrefix + ch + SFX_SONG_CONTAINER;
+  for i := 1 to ArtistSongChars.Length do begin
+    ch := ArtistSongChars[i];
+    ContainerName := aContainerPrefix + ch + SFX_SONG_CONTAINER;
     if not StorageSys.CreateContainer(ContainerName) then begin
       writeLn('error: unable to create container ' + ContainerName);
-      exit false;
+      InitializeStorageSystem := false;
+      exit;
     end;
   end;
 
   // create the other (non-song) containers
-  const ContainerNames = new List<String>;
+  ContainerNames := TStringList.Create;
   ContainerNames.Add(SFX_METADATA_CONTAINER);
   ContainerNames.Add(SFX_ALBUM_ART_CONTAINER);
   ContainerNames.Add(SFX_ALBUM_CONTAINER);
   ContainerNames.Add(SFX_PLAYLIST_CONTAINER);
 
-  for each ContainerName in ContainerNames do begin
-    const CnrName = aContainerPrefix + ContainerName;
+  for i := 0 to ContainerNames.Count-1 do begin
+    ContainerName := ContainerNames[i];
+    CnrName := aContainerPrefix + ContainerName;
     if not StorageSys.CreateContainer(CnrName) then begin
       writeLn('error: unable to create container ' + CnrName);
-      exit false;
+      InitializeStorageSystem := false;
+      exit;
     end;
   end;
 
   // delete metadata DB file if present
-  const MetadataDbFile = DEFAULT_DB_FILE_NAME;
-  if JBFileExists(MetadataDbFile) then begin
+  if JBFileExists(DEFAULT_DB_FILE_NAME) then begin
     if aDebugPrint then begin
-      writeLn("deleting existing metadata DB file");
+      writeLn('deleting existing metadata DB file');
     end;
-    JBDeleteFile(MetadataDbFile);
+    JBDeleteFile(DEFAULT_DB_FILE_NAME);
   end;
 
-  exit true;
+  InitializeStorageSystem := true;
 end;
-}
 
 //*******************************************************************************
 
@@ -336,7 +340,7 @@ begin
     // does our metadata DB file exist in the metadata container?
     if MetadataFileInContainer then begin
       // download it
-      MetadataDbFilePath := GetMetadataDbFilePath();
+      MetadataDbFilePath := GetMetadataDbFilePath;
 
       if JBFileExists(MetadataDbFilePath) then begin
         if DebugPrint then begin
@@ -365,8 +369,8 @@ begin
       end;
     end;
 
-    JukeboxDb := TJukeboxDB.Create(GetMetadataDbFilePath(), DebugPrint);
-    EnterSuccess := JukeboxDb.Enter();
+    JukeboxDb := TJukeboxDB.Create(GetMetadataDbFilePath, DebugPrint);
+    EnterSuccess := JukeboxDb.Enter;
     if not EnterSuccess then begin
       writeLn('unable to connect to database');
     end;
@@ -570,7 +574,7 @@ var
   cumulativeUploadKb: Double;
 begin
   if JukeboxDb <> nil then begin
-    if not JukeboxDb.IsOpen() then begin
+    if not JukeboxDb.IsOpen then begin
       exit;
     end;
 
@@ -1155,7 +1159,7 @@ begin
     exit;
   end;
 
-  osIdentifier := JBGetPlatformIdentifier();
+  osIdentifier := JBGetPlatformIdentifier;
   if osIdentifier = PLATFORM_UNKNOWN then begin
     writeLn('error: no audio-player specific lookup defined for this OS (unknown)');
     exit;
@@ -1191,7 +1195,7 @@ begin
         AudioPlayerExeFileName.Trim(charsToStrip);
     end;
 
-    AudioPlayerExeFileName := AudioPlayerExeFileName.Trim();
+    AudioPlayerExeFileName := AudioPlayerExeFileName.Trim;
 
     if AudioPlayerExeFileName.Length = 0 then begin
       writeLn('error: no value given for ' + key + ' within [' +
@@ -1313,7 +1317,7 @@ begin
   end;
 
   if Shuffle then begin
-    JBShuffleList(aSongList);
+    //JBShuffleList(aSongList);
   end;
 
   writeLn('downloading first song...');
@@ -1341,12 +1345,13 @@ begin
             if SongIndex >= NumberSongs then begin
               SongIndex := 0;
             end;
-          end else begin
+          end
+          else begin
             JBSleepSeconds(1);
           end;
         end
         else begin
-          break
+          break;
         end;
       end;
     finally
@@ -1365,7 +1370,7 @@ var
   ListContainers: TStringList;
   i: Integer;
 begin
-  ListContainers := StorageSystem.GetContainerNames();
+  ListContainers := StorageSystem.GetContainerNames;
   if ListContainers.Count > 0 then begin
     for i := 0 to ListContainers.Count-1 do begin
       writeLn(ListContainers[i]);
@@ -1460,7 +1465,7 @@ begin
       JukeboxDb.Close;
       JukeboxDb := nil;
 
-      DbFilePath := GetMetadataDbFilePath();
+      DbFilePath := GetMetadataDbFilePath;
       DbFileContents := JBFileReadAllBytes(DbFilePath);
 
       if DbFileContents.Size > 0 then begin
@@ -1500,7 +1505,7 @@ var
   i: Integer;
 begin
   if JukeboxDb <> nil then begin
-    if JukeboxDb.IsOpen() then begin
+    if JukeboxDb.IsOpen then begin
       FileImportCount := 0;
       DirListing := JBListFilesInDirectory(PlaylistImportDirPath);
       if DirListing.Count = 0 then begin
@@ -1571,7 +1576,8 @@ begin
     for i := 0 to NumberPlaylists-1 do begin
       writeLn(ContainerContents[i]);
     end;
-  end else begin
+  end
+  else begin
     writeLn('no playlists found');
   end;
 end;
@@ -1609,7 +1615,7 @@ begin
             Track := TrackList.Item[i];
             TrackObject := Track.Item['object'];
             if TrackObject <> nil then begin
-              ListTrackObjects.Add(TrackObject.ToString());
+              ListTrackObjects.Add(TrackObject.ToString);
             end;
           end;
           Success := true;
@@ -1854,16 +1860,14 @@ begin
   IsDeleted := false;
   if SongUid.Length > 0 then begin
     if JukeboxDb <> nil then begin
-      {
-      DbDeleted := JukeboxDb.DeleteSong(SongUid);
-      Container := ContainerForSong(SongUid);
-      if Container.Length > 0 then begin
-        SsDeleted := StorageSystem.DeleteObject(Container, SongUid);
-        if DbDeleted and UploadMetadata then
-          UploadMetadataDb;
-        IsDeleted := DbDeleted or SsDeleted;
-      end;
-      }
+      //DbDeleted := JukeboxDb.DeleteSong(SongUid);
+      //Container := ContainerForSong(SongUid);
+      //if Container.Length > 0 then begin
+      //  SsDeleted := StorageSystem.DeleteObject(Container, SongUid);
+      //  if DbDeleted and UploadMetadata then
+      //    UploadMetadataDb;
+      //  IsDeleted := DbDeleted or SsDeleted;
+      //end;
     end;
   end;
 
@@ -1887,18 +1891,16 @@ begin
         writeLn('no artist songs in jukebox');
       end
       else begin
-        {
-        for i := 0 to TheSongList.Count-1 do begin
-          Song := TheSongList[i];
-          if not DeleteSong(Song.Fm.ObjectName, false) then begin
-            writeLn('error deleting song ' + Song.Fm.ObjectName);
-            DeleteArtist := false;
-            exit;
-          end;
-        end;
+        //for i := 0 to TheSongList.Count-1 do begin
+        //  Song := TheSongList[i];
+        //  if not DeleteSong(Song.Fm.ObjectName, false) then begin
+        //    writeLn('error deleting song ' + Song.Fm.ObjectName);
+        //    DeleteArtist := false;
+        //    exit;
+        //  end;
+        //end;
         UploadMetadataDb;
         IsDeleted := true;
-        }
       end;
     end;
   end;
@@ -1938,11 +1940,9 @@ begin
             //DIFFERENCE
             if StorageSystem.DeleteObject(ContainerPrefix + Song.Fm.ContainerName,
                                           Song.Fm.ObjectName) then begin
-              {
-              inc(NumSongsDeleted);
+              //inc(NumSongsDeleted);
               // delete song metadata
-              JukeboxDb.DeleteSong(Song.Fm.ObjectName);
-              }
+              //JukeboxDb.DeleteSong(Song.Fm.ObjectName);
             end
             else begin
               writeLn('error: unable to delete song ' +
@@ -1981,29 +1981,6 @@ begin
   if JukeboxDb <> nil then begin
     ObjectName := JukeboxDb.GetPlaylist(PlaylistName);
     if ObjectName.Length > 0 then begin
-      {
-      DbDeleted := JukeboxDb.DeletePlaylist(PlaylistName);
-      if DbDeleted then begin
-        writeLn('container=' + PlaylistContainer +
-                ', object=' + ObjectName);
-        if StorageSystem.DeleteObject(PlaylistContainer,
-                                      ObjectName) then begin
-          IsDeleted := true;
-        end
-        else begin
-          writeLn('error: object delete failed');
-        end;
-      end
-      else begin
-        writeLn('error: database delete failed');
-        if IsDeleted then begin
-          UploadMetadataDb;
-        end
-        else begin
-          writeLn('delete of playlist failed');
-        end;
-      end;
-      }
     end
     else begin
       writeLn('invalid playlist name');
