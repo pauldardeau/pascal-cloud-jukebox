@@ -65,7 +65,7 @@ procedure TStringSet.Append(aSet: TStringSet);
 var
   i: Integer;
 begin
-  for i := 1 to aSet.MapStrings.Count do begin
+  for i := 0 to aSet.MapStrings.Count-1 do begin
     MapStrings.Add(aSet.MapStrings.Keys[i], true);
   end;
 end;
