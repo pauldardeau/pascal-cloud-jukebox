@@ -100,22 +100,25 @@ var
   Sb: TStringBuilder;
 begin
   Sb := TStringBuilder.Create;
-  AssignFile(FileHandle, FilePath);
   try
-    Reset(FileHandle);
-    while not Eof(FileHandle) do begin
-      readln(FileHandle, FileLine);
-      Sb.Append(FileLine);
+    AssignFile(FileHandle, FilePath);
+    try
+      Reset(FileHandle);
+      while not Eof(FileHandle) do begin
+        readln(FileHandle, FileLine);
+        Sb.Append(FileLine);
+      end;
+    except
+      On E: EInOutError do begin
+        writeln('error: JBFileReadAllText exception. Details: ', E.Message);
+      end;
     end;
-  except
-    On E: EInOutError do begin
-      writeln('error: JBFileReadAllText exception. Details: ', E.Message);
-    end;
-  end;
-  CloseFile(FileHandle);
+    CloseFile(FileHandle);
 
-  JBFileReadAllText := Sb.ToString;
-  Sb.Free;
+    JBFileReadAllText := Sb.ToString;
+  finally
+    Sb.Free;
+  end;
 end;
 
 //*******************************************************************************
@@ -163,18 +166,21 @@ var
 begin
   Fs := nil;
   try
-    Fs := TFileStream.Create(FilePath, fmCreate);
-    Fs.Write(Contents[1], Length(Contents));
-    Success := true;
-  except
-    on E: Exception do begin
-      Success := false;
-      writeln('Unable to write text to file. Details: ', E.ClassName, ': ', E.Message);
+    try
+      Fs := TFileStream.Create(FilePath, fmCreate);
+      Fs.Write(Contents[1], Length(Contents));
+      Success := true;
+    except
+      on E: Exception do begin
+        Success := false;
+        writeln('Unable to write text to file. Details: ',
+		        E.ClassName, ': ', E.Message);
+      end;
     end;
-  end;
-
-  if Fs <> nil then begin
-    Fs.Free;
+  finally
+    if Fs <> nil then begin
+      Fs.Free;
+    end;
   end;
 
   JBFileWriteAllText := Success;
@@ -232,12 +238,16 @@ var
 begin
   MemBuffer := TMemoryStream.Create;
   try
-    MemBuffer.LoadFromFile(Source);
-    MemBuffer.SaveToFile(Target);
-    Success := true;
-  except
+    try
+      MemBuffer.LoadFromFile(Source);
+      MemBuffer.SaveToFile(Target);
+      Success := true;
+    except
+    end;
+  finally
+    MemBuffer.Free;
   end;
-  MemBuffer.Free;
+  
   JBFileCopy := Success;
 end;
 

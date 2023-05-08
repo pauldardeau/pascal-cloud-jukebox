@@ -294,6 +294,11 @@ begin
     SongDownloaderThread.Free;
 	SongDownloaderThread := nil;
   end;
+  
+  if SongList <> nil then begin
+    SongList.Free;
+	SongList := nil;
+  end;
 
   inherited;
 end;
@@ -440,6 +445,7 @@ begin
     //if AudioPlayerProcess <> nil then begin
     //  // capture current song position (seconds into song)
     //  AudioPlayerProcess.Stop;
+	//  AudioPlayerProcess.Free;
     //  AudioPlayerProcess := nil;
     //end;
   end
@@ -471,6 +477,7 @@ begin
   // terminate audio player if it's running
   //if AudioPlayerProcess <> nil then begin
   //  AudioPlayerProcess.Stop;
+  //  AudioPlayerProcess.Free;
   //  AudioPlayerProcess := nil;
   //end;
 end;
@@ -722,7 +729,7 @@ begin
                     writeLn('unable to store metadata, deleting obj "' +
                             fsSong.Fm.ObjectName + '"');
                     StorageSystem.DeleteObject(ContainerName,
-                                               fsSong.Fm.ObjectName);
+					                           fsSong.Fm.ObjectName);
                   end
                   else begin
                     inc(FileImportCount);

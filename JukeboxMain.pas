@@ -727,6 +727,11 @@ begin
     writeLn('checking commands');
 
     if not AllCommands.Contains(Command) then begin
+	  if Creds <> nil then begin
+	    Creds.Free;
+		Creds := nil;
+	  end;
+	  
       writeLn('Unrecognized command ' + Command);
       writeLn('');
       ShowUsage;
@@ -752,6 +757,8 @@ begin
         StorageSystem := ConnectStorageSystem(StorageType,
                                               Creds,
                                               ContainerPrefix);
+		Creds.Free;
+		Creds := nil;
 
         if StorageSystem = nil then begin
           writeLn('error: unable to connect to storage system');
