@@ -154,7 +154,7 @@ begin
       Arg := Arg.Substring(2);
       if ArgType = TYPE_BOOL_VALUE then begin
         if DebugMode then begin
-          writeLn('ArgumentParser: adding key={0} value=true', Arg);
+          writeLn('ArgumentParser: adding key=' + Arg + ' value=true');
         end;
         ps.Add(Arg, TPropertyValue.Create(true));
       end
@@ -165,7 +165,7 @@ begin
           try
             IntValue := StrToInt(NextArg);
             if DebugMode then begin
-              writeLn('ArgumentParser: adding key={0} value={1}', Arg, IntValue);
+              writeLn('ArgumentParser: adding key=' + Arg + ' value=' + IntToStr(IntValue));
             end;
             ps.Add(Arg, TPropertyValue.Create(IntValue));
           except
@@ -173,7 +173,7 @@ begin
         end
         else begin
           // missing int value
-          writeLn('ArgumentParser: missing int value for key={0}', Arg);
+          writeLn('ArgumentParser: missing int value for key=' + Arg);
         end;
       end
       else if ArgType = TYPE_STRING_VALUE then begin
@@ -181,37 +181,37 @@ begin
         if I < NumArgs then begin
           NextArg := Args[I];
           if DebugMode then begin
-            writeLn('ArgumentParser: adding key={0} value={1}', Arg, NextArg);
+            writeLn('ArgumentParser: adding key=' + Arg + ' value=' + NextArg);
           end;
           ps.Add(Arg, TPropertyValue.Create(NextArg));
         end
         else begin
           // missing string value
-          writeLn('ArgumentParser: missing string value for key={0}', Arg);
+          writeLn('ArgumentParser: missing string value for key=' + Arg);
         end;
       end
       else begin
         // unrecognized type
-        writeLn('ArgumentParser: unrecognized data type for key={0}', Arg);
+        writeLn('ArgumentParser: unrecognized data type for key=' + Arg);
       end;
     end
     else begin
       if Arg.StartsWith(DOUBLE_DASHES) then begin
         // unrecognized option
-        writeLn('ArgumentParser: unrecognized option {0}', Arg);
+        writeLn('ArgumentParser: unrecognized option ' + Arg);
       end
       else begin
         if CommandsFound < ListCommands.Count then begin
           CommandName := ListCommands[CommandsFound];
           if DebugMode then begin
-            writeLn('ArgumentParser: adding key={0} value={1}', CommandName, Arg);
+            writeLn('ArgumentParser: adding key=' + CommandName + ' value=' + Arg);
           end;
           ps.Add(CommandName, TPropertyValue.Create(Arg));
           inc(CommandsFound);
         end
         else begin
           // unrecognized command
-          writeLn('ArgumentParser: unrecognized command {0}', Arg);
+          writeLn('ArgumentParser: unrecognized command ' + Arg);
         end;
       end;
     end;
