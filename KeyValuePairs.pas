@@ -93,12 +93,10 @@ function TKeyValuePairs.GetKeys: TStringList;
 var
   ListKeys: TStringList;
   i: Integer;
-  Key: String;
 begin
   ListKeys := TStringList.Create;
   for i := 0 to DictKeyValues.Count-1 do begin
-    Key := DictKeyValues.Keys[i];
-    ListKeys.Append(Key);
+    ListKeys.Append(DictKeyValues.Keys[i]);
   end;
   GetKeys := ListKeys;
 end;

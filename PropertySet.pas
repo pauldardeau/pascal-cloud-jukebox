@@ -260,7 +260,6 @@ function TPropertySet.PopulateFromString(EncodedPropertySet: String): Boolean;
 var
   Success: Boolean;
   FileLines: TStringArray;
-  FileLine: String;
   StrippedFileLine: String;
   Fields: TStringArray;
   DataType: String;
@@ -277,8 +276,7 @@ begin
   if EncodedPropertySet.Length > 0 then begin
     FileLines := EncodedPropertySet.Split(LineEnding);
     for i := 0 to Length(FileLines)-1 do begin
-      FileLine := FileLines[i];
-      StrippedFileLine := FileLine.Trim;
+      StrippedFileLine := FileLines[i].Trim;
       if StrippedFileLine.Length > 0 then begin
         Fields := StrippedFileLine.Split('|');
         if Length(Fields) = 3 then begin

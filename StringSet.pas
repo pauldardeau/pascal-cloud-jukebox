@@ -91,16 +91,14 @@ function TStringSet.ToString: String;
 var
   sb: TStringBuilder;
   i: Integer;
-  Value: String;
 begin
   sb := TStringBuilder.Create;
   try
     for i := 0 to MapStrings.Count-1 do begin
-      Value := MapStrings.Keys[i];
       if sb.Length > 0 then begin
         sb.Append(', ');
       end;
-      sb.Append(Value);
+      sb.Append(MapStrings.Keys[i]);
     end;
     ToString := sb.ToString;
   finally
