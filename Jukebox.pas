@@ -531,6 +531,8 @@ begin
       else begin
         StoreSuccess := true; // no insert or update needed (already up-to-date)
       end;
+	  DbSong.Free;
+	  DbSong := nil;
     end
     else begin
       // song is not in the database, insert it
@@ -623,6 +625,8 @@ begin
 
     DirListing := JBListFilesInDirectory(SongImportDirPath);
     if DirListing.Count = 0 then begin
+	  DirListing.Free;
+	  DirListing := nil;
       exit;
     end;
 
@@ -768,6 +772,9 @@ begin
         end;
       end;
     end;  // for each file in import directory
+	
+	DirListing.Free;
+	DirListing := nil;
 
     if not DebugPrint then begin
       {
@@ -1025,7 +1032,7 @@ begin
       for i := 0 to Length(Args)-1 do begin
         AudioPlayerProcess.Parameters.Add(Args[i]);
       end;
-
+	  
       AudioPlayerProcess.Options := AudioPlayerProcess.Options + [poWaitOnExit];
       AudioPlayerProcess.Execute;
       ExitCode := AudioPlayerProcess.ExitCode;
@@ -1076,6 +1083,8 @@ begin
   // scan the play list directory to see if we need to download more songs
   DirListing := JBListFilesInDirectory(SongPlayDirPath);
   if DirListing.Count = 0 then begin
+    DirListing.Free;
+	DirListing := nil;
     // log error
     exit;
   end;
@@ -1093,6 +1102,9 @@ begin
       inc(SongFileCount);
     end;
   end;
+  
+  DirListing.Free;
+  DirListing := nil;
 
   FileCacheCount := JukeboxOptions.FileCacheCount;
 
@@ -1120,6 +1132,9 @@ begin
   if DlSongs.Count > 0 then begin
     DownloadSongs(DlSongs);
   end;
+  
+  DlSongs.Free;
+  DlSongs := nil;
 end;
 
 //*******************************************************************************
@@ -1176,13 +1191,27 @@ begin
           end;
           if aSongList.Count = ListTrackObjects.Count then begin
             HaveSongs := true;
+			if SongList <> nil then begin
+			  SongList.Free;
+			  SongList := nil;
+			end;
             SongList := aSongList;
           end;
         end;
-      end;
+      end
+	  else begin
+	    aSongList.Free;
+		aSongList := nil;
+		ListTrackObjects.Free;
+		ListTrackObjects := nil;
+	  end;
     end;
 
     if not HaveSongs then begin
+	  if SongList <> nil then begin
+	    SongList.Free;
+		SongList := nil;
+	  end;
       SongList := JukeboxDb.RetrieveSongs(Artist, Album);
     end;
 
@@ -1238,6 +1267,7 @@ begin
   end;
   
   iniReader.Free;
+  iniReader := nil;
 
   key := AUDIO_PLAYER_EXE_FILE_NAME;
 
@@ -1333,6 +1363,7 @@ begin
   end;
   
   kvpAudioPlayer.Free;
+  kvpAudioPlayer := nil;
 
   if AudioPlayerResumeArgs.Length = 0 then begin
     AudioPlayerResumeArgs := AudioPlayerCommandArgs;
@@ -1346,6 +1377,11 @@ var
   pidAsText: String;
   pidFilePath: String;
 begin
+  if SongList <> nil then begin
+    SongList.Free;
+	SongList := nil;
+  end;
+  
   SongList := aSongList;
   NumberSongs := aSongList.Count;
   SongIndex := 0;
@@ -1442,6 +1478,8 @@ begin
   else begin
     writeLn('error: unable to retrieve list of containers');
   end;
+  ListContainers.Free;
+  ListContainers := nil;
 end;
 
 //*******************************************************************************
@@ -1580,6 +1618,8 @@ begin
       FileImportCount := 0;
       DirListing := JBListFilesInDirectory(PlaylistImportDirPath);
       if DirListing.Count = 0 then begin
+	    DirListing.Free;
+		DirListing := nil;
         writeLn('no playlists found');
         exit;
       end;
@@ -1624,6 +1664,9 @@ begin
 		  FileContents := nil;
 		end;
       end;
+	  
+	  DirListing.Free;
+	  DirListing := nil;
 
       if FileImportCount > 0 then begin
         writeLn(IntToStr(FileImportCount) + ' playlists imported');
@@ -1656,6 +1699,9 @@ begin
   else begin
     writeLn('no playlists found');
   end;
+  
+  ContainerContents.Free;
+  ContainerContents := nil;
 end;
 
 //*******************************************************************************
@@ -1837,7 +1883,9 @@ begin
         end;
       end;
       }
-    end
+      FileExtensions.Free;
+	  FileExtensions := nil;
+	end
     else begin
       writeLn('Playlist json file is empty');
     end;
@@ -1872,6 +1920,8 @@ begin
   else begin
     writeLn('Unable to retrieve album ' + Artist + '/' + Album);
   end;
+  ListTrackObjects.Free;
+  ListTrackObjects := nil;
 end;
 
 //*******************************************************************************
@@ -1893,6 +1943,8 @@ begin
     writeLn('unable to retrieve playlist ' + Playlist +
             ' in ' + PlaylistContainer);
   end;
+  ListSongs.Free;
+  ListSongs := nil;
 end;
 
 //*******************************************************************************
@@ -1978,6 +2030,8 @@ begin
         UploadMetadataDb;
         IsDeleted := true;
       end;
+	  TheSongList.Free;
+	  TheSongList := nil;
     end;
   end;
 
@@ -2035,6 +2089,8 @@ begin
                     ' album name=' + AlbumName);
           end;
         end;
+		ListAlbumSongs.Free;
+		ListAlbumSongs := nil;
       end;
     end;
   end
@@ -2085,6 +2141,8 @@ begin
       FileImportCount := 0;
       DirListing := JBListFilesInDirectory(AlbumArtImportDirPath);
       if DirListing.Count = 0 then begin
+	    DirListing.Free;
+		DirListing := nil;
         writeLn('no album art found');
         exit;
       end;
@@ -2106,7 +2164,7 @@ begin
         FileName := DirListing[i];
         FullPath := JBPathJoin(AlbumArtImportDirPath, FileName);
         ObjectName := FileName;
-		FileContents := nil;
+        FileContents := nil;
         FileRead := ReadFileContents(FullPath, FileContents);
         if FileRead then begin
           if StorageSystem.PutObject(AlbumArtContainer,
