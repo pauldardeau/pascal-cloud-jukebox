@@ -414,10 +414,13 @@ var
   i: Integer;
 begin
   listFiles := JBListFilesInDirectory(DirPath);
-  for i := 0 to listFiles.Count-1 do begin
-    JBDeleteFile(JBPathJoin(DirPath, listFiles[i]));
+  try
+    for i := 0 to listFiles.Count-1 do begin
+      JBDeleteFile(JBPathJoin(DirPath, listFiles[i]));
+    end;
+  finally
+    listFiles.Free;
   end;
-  listFiles.Free;
 end;
 
 //*******************************************************************************

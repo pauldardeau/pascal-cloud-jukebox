@@ -96,7 +96,7 @@ var
 begin
   Index := MapProps.IndexOf(PropName);
   if Index > -1 then
-   Get := MapProps.Data[Index]
+    Get := MapProps.Data[Index]
   else
     Get := nil;
 end;
@@ -199,56 +199,59 @@ var
   PropValue: String;
 begin
   Encoded := TStringBuilder.Create;
+  
+  try
+    for i := 0 to MapProps.Count-1 do begin
+      PropName := MapProps.Keys[i];
+      PV := Get(PropName);
 
-  for i := 0 to MapProps.Count-1 do begin
-    PropName := MapProps.Keys[i];
-    PV := Get(PropName);
-
-    if PV.IsBool then begin
-      BoolValue := '';
-      if PV.GetBoolValue then begin
-        BoolValue := VALUE_TRUE;
+      if PV.IsBool then begin
+        BoolValue := '';
+        if PV.GetBoolValue then begin
+          BoolValue := VALUE_TRUE;
+        end
+        else begin
+          BoolValue := VALUE_FALSE;
+        end;
+        PropType := TYPE_BOOL;
+        PropValue := BoolValue;
       end
-      else begin
-        BoolValue := VALUE_FALSE;
+      else if PV.IsString then begin
+        PropType := TYPE_STRING;
+        PropValue := PV.GetStringValue;
+      end
+      else if PV.IsInt then begin
+        PropType := TYPE_INT;
+        PropValue := IntToStr(PV.GetIntValue);
+      end
+      else if PV.IsLong then begin
+        PropType := TYPE_LONG;
+        PropValue := IntToStr(PV.GetLongValue);
+      end
+      else if PV.IsULong then begin
+        PropType := TYPE_ULONG;
+        PropValue := IntToStr(PV.GetULongValue);
+      end
+      else if PV.IsDouble then begin
+        PropType := TYPE_DOUBLE;
+        PropValue := FloatToStr(PV.GetDoubleValue);
+      end
+      else if PV.IsNull then begin
+        PropType := TYPE_NULL;
+        PropValue := '';
       end;
-      PropType := TYPE_BOOL;
-      PropValue := BoolValue;
-    end
-    else if PV.IsString then begin
-      PropType := TYPE_STRING;
-      PropValue := PV.GetStringValue;
-    end
-    else if PV.IsInt then begin
-      PropType := TYPE_INT;
-      PropValue := IntToStr(PV.GetIntValue);
-    end
-    else if PV.IsLong then begin
-      PropType := TYPE_LONG;
-      PropValue := IntToStr(PV.GetLongValue);
-    end
-    else if PV.IsULong then begin
-      PropType := TYPE_ULONG;
-      PropValue := IntToStr(PV.GetULongValue);
-    end
-    else if PV.IsDouble then begin
-      PropType := TYPE_DOUBLE;
-      PropValue := FloatToStr(PV.GetDoubleValue);
-    end
-    else if PV.IsNull then begin
-      PropType := TYPE_NULL;
-      PropValue := '';
+      Encoded.Append(PropType);
+      Encoded.Append('|');
+      Encoded.Append(PropName);
+      Encoded.Append('|');
+      Encoded.Append(PropValue);
+      Encoded.Append(LineEnding);
     end;
-    Encoded.Append(PropType);
-    Encoded.Append('|');
-    Encoded.Append(PropName);
-    Encoded.Append('|');
-    Encoded.Append(PropValue);
-    Encoded.Append(LineEnding);
-  end;
 
-  ToString := Encoded.ToString;
-  Encoded.Free;
+    ToString := Encoded.ToString;
+  finally
+    Encoded.Free;
+  end;
 end;
 
 //*******************************************************************************

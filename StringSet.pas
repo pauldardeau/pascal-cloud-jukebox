@@ -94,15 +94,18 @@ var
   Value: String;
 begin
   sb := TStringBuilder.Create;
-  for i := 0 to MapStrings.Count-1 do begin
-    Value := MapStrings.Keys[i];
-    if sb.Length > 0 then begin
-      sb.Append(', ');
+  try
+    for i := 0 to MapStrings.Count-1 do begin
+      Value := MapStrings.Keys[i];
+      if sb.Length > 0 then begin
+        sb.Append(', ');
+      end;
+      sb.Append(Value);
     end;
-    sb.Append(Value);
+    ToString := sb.ToString;
+  finally
+    sb.Free;
   end;
-  ToString := sb.ToString;
-  sb.Free;
 end;
 
 //*******************************************************************************

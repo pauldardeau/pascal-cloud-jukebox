@@ -251,26 +251,27 @@ var
   Success: Boolean;
 begin
   Map := TKeyValuePairs.Create;
+  
+  try
+    if not ReadSection(Section, Map) then begin
+      writeLn('IniReader ReadSection returned false');
+      GetSectionKeyValue := false;
+      exit;
+    end;
 
-  if not ReadSection(Section, Map) then begin
-    writeLn('IniReader ReadSection returned false');
+    StrippedKey := Key.Trim;
+
+    if Map.ContainsKey(StrippedKey) then begin
+      Value := Map.GetValue(StrippedKey);
+      Success := true;
+    end
+    else begin
+      writeLn('map does not contain key ' + StrippedKey);
+      Success := false;
+    end;
+  finally
     Map.Free;
-    GetSectionKeyValue := false;
-    exit;
   end;
-
-  StrippedKey := Key.Trim;
-
-  if Map.ContainsKey(StrippedKey) then begin
-    Value := Map.GetValue(StrippedKey);
-    Success := true;
-  end
-  else begin
-    writeLn('map does not contain key ' + StrippedKey);
-    Success := false;
-  end;
-
-  Map.Free;
 
   GetSectionKeyValue := Success;
 end;
