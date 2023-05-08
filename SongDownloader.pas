@@ -12,8 +12,8 @@ type
 
   TSongDownloader = Class(TObject)
   private
-    jukebox: TAbstractJukebox;
-    ListSongs: TListSongMetadata;
+    jukebox: TAbstractJukebox;     // weak
+    ListSongs: TListSongMetadata;  // weak
 
   public
     constructor Create(jb: TAbstractJukebox; aSongList: TListSongMetadata);
