@@ -402,6 +402,8 @@ begin
     JukeboxDb := TJukeboxDB.Create(GetMetadataDbFilePath, DebugPrint);
     EnterSuccess := JukeboxDb.Enter;
     if not EnterSuccess then begin
+	  JukeboxDb.Free;
+	  JukeboxDb := nil;
       writeLn('unable to connect to database');
     end;
   end
@@ -423,6 +425,7 @@ procedure TJukebox.Leave;
 begin
   if JukeboxDb <> nil then begin
     JukeboxDb.Leave;
+	JukeboxDb.Free;
     JukeboxDb := nil;
   end;
 end;
