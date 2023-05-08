@@ -44,6 +44,7 @@ end;
 
 destructor TSongDownloaderThread.Destroy;
 begin
+  SongDownloader.Free;
   inherited;
 end;
 

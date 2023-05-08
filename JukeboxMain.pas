@@ -202,35 +202,93 @@ end;
 //*******************************************************************************
 
 procedure TJukeboxMain.ShowUsage;
+var
+  sb: TStringBuilder;
 begin
-  writeLn('Supported Commands:');
-  writeLn(CMD_DELETE_ALBUM + '       - delete specified album');
-  writeLn(CMD_DELETE_ARTIST + '      - delete specified artist');
-  writeLn(CMD_DELETE_PLAYLIST + '    - delete specified playlist');
-  writeLn(CMD_DELETE_SONG + '        - delete specified song');
-  writeLn(CMD_EXPORT_ALBUM + '       - FUTURE');
-  writeLn(CMD_EXPORT_ARTIST + '      - FUTURE');
-  writeLn(CMD_EXPORT_PLAYLIST + '    - FUTURE');
-  writeLn(CMD_HELP + '               - show this help message');
-  writeLn(CMD_IMPORT_ALBUM_ART + '   - import all album art from album-art-import subdirectory');
-  writeLn(CMD_IMPORT_PLAYLISTS + '   - import all new playlists from playlist-import subdirectory');
-  writeLn(CMD_IMPORT_SONGS + '       - import all new songs from song-import subdirectory');
-  writeLn(CMD_INIT_STORAGE + '       - initialize storage system');
-  writeLn(CMD_LIST_ALBUMS + '        - show listing of all available albums');
-  writeLn(CMD_LIST_ARTISTS + '       - show listing of all available artists');
-  writeLn(CMD_LIST_CONTAINERS + '    - show listing of all available storage containers');
-  writeLn(CMD_LIST_GENRES + '        - show listing of all available genres');
-  writeLn(CMD_LIST_PLAYLISTS + '     - show listing of all available playlists');
-  writeLn(CMD_LIST_SONGS + '         - show listing of all available songs');
-  writeLn(CMD_PLAY + '               - start playing songs');
-  writeLn(CMD_PLAY_PLAYLIST + '      - play specified playlist');
-  writeLn(CMD_SHOW_ALBUM + '         - show songs in a specified album');
-  writeLn(CMD_SHOW_PLAYLIST + '      - show songs in specified playlist');
-  writeLn(CMD_SHUFFLE_PLAY + '       - play songs randomly');
-  writeLn(CMD_RETRIEVE_CATALOG + '   - retrieve copy of music catalog');
-  writeLn(CMD_UPLOAD_METADATA_DB + ' - upload SQLite metadata');
-  writeLn(CMD_USAGE + '              - show this help message');
-  writeLn('');
+  sb := TStringBuilder.Create;
+  sb.Append('Supported Commands:');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_DELETE_ALBUM + '       - delete specified album');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_DELETE_ARTIST + '      - delete specified artist');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_DELETE_PLAYLIST + '    - delete specified playlist');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_DELETE_SONG + '        - delete specified song');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_EXPORT_ALBUM + '       - FUTURE');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_EXPORT_ARTIST + '      - FUTURE');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_EXPORT_PLAYLIST + '    - FUTURE');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_HELP + '               - show this help message');
+  sb.Append(LineEnding);
+  
+  sb.Append(CMD_IMPORT_ALBUM_ART + '   - import all album art from album-art-import subdirectory');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_IMPORT_PLAYLISTS + '   - import all new playlists from playlist-import subdirectory');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_IMPORT_SONGS + '       - import all new songs from song-import subdirectory');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_INIT_STORAGE + '       - initialize storage system');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_LIST_ALBUMS + '        - show listing of all available albums');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_LIST_ARTISTS + '       - show listing of all available artists');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_LIST_CONTAINERS + '    - show listing of all available storage containers');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_LIST_GENRES + '        - show listing of all available genres');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_LIST_PLAYLISTS + '     - show listing of all available playlists');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_LIST_SONGS + '         - show listing of all available songs');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_PLAY + '               - start playing songs');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_PLAY_PLAYLIST + '      - play specified playlist');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_SHOW_ALBUM + '         - show songs in a specified album');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_SHOW_PLAYLIST + '      - show songs in specified playlist');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_SHUFFLE_PLAY + '       - play songs randomly');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_RETRIEVE_CATALOG + '   - retrieve copy of music catalog');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_UPLOAD_METADATA_DB + ' - upload SQLite metadata');
+  sb.Append(LineEnding);
+
+  sb.Append(CMD_USAGE + '              - show this help message');
+  sb.Append(LineEnding);
+
+  writeLn(sb.ToString);
+  sb.Free;
 end;
 
 //*******************************************************************************
@@ -487,6 +545,7 @@ begin
     if not SupportedSystems.Contains(Storage) then begin
       writeLn('error: invalid storage type ' + Storage);
       writeLn('supported systems are: ' + SupportedSystems.ToString);
+	  Args.Free;
       Run := 1;
       exit;
     end
@@ -650,12 +709,15 @@ begin
 
         if StorageSystem = nil then begin
           writeLn('error: unable to connect to storage system');
+		  Args.Free;
           Run := 1;
           exit;
         end;
 
         if not StorageSystem.Enter then begin
           writeLn('error: unable to enter storage system');
+		  StorageSystem.Free;
+		  Args.Free;
           Run := 1;
           exit;
         end;
@@ -667,6 +729,8 @@ begin
           else begin
             ExitCode := 1;
           end;
+		  StorageSystem.Free;
+		  Args.Free;
           Run := ExitCode;
           exit;
         end;
@@ -689,6 +753,7 @@ begin
     writeLn('Error: no command given');
     ShowUsage;
   end;
+  Args.Free;
 
   Run := ExitCode;
 end;

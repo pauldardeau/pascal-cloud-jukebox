@@ -116,7 +116,7 @@ begin
   Region := aRegion;
   Directory := aDirectory;
   ScriptDirectory := JBPathJoin(Directory, 'scripts');
-  ListContainers := TStringList.Create;
+  ListContainers := nil;
 end;
 
 //*******************************************************************************
@@ -181,6 +181,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   ListAccountContainers := ListOfContainers;
@@ -238,6 +239,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   CreateContainer := ContainerCreated;
@@ -274,6 +276,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   DeleteContainer := ContainerDeleted;
@@ -314,6 +317,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   ListContainerContents := ListObjects;
@@ -358,6 +362,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   GetObjectMetadata := Success;
@@ -510,6 +515,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   PutObjectFromFile := ObjectAdded;
@@ -549,6 +555,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   DeleteObject := ObjectDeleted;
@@ -600,6 +607,7 @@ begin
     end;
   finally
     JBDeleteFileIfExists(RunScript);
+	Kvp.Free;
   end;
 
   if Success and JBFileExists(LocalFilePath) then begin
@@ -720,6 +728,8 @@ begin
       Success := true;
     end;
   end;
+  
+  ProgramArgs.Free;
 
   RunProgram := Success;
 end;
@@ -790,6 +800,8 @@ begin
     end;
   end;
 
+  ProgramArgs.Free;
+  
   RunProgram := Success;
 end;
 
@@ -856,6 +868,8 @@ begin
       Success := true;
     end;
   end;
+  
+  ProgramArgs.Free;
 
   RunProgram := Success;
 end;
@@ -899,6 +913,7 @@ begin
     KvpValue := Kvp.GetValue(KvpKey);
     FileText := FileText.Replace(KvpKey, KvpValue);
   end;
+  KvpKeys.Free;
 
   if not JBFileWriteAllText(RunScript, FileText) then begin
     PrepareRunScript := false;

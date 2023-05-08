@@ -46,6 +46,11 @@ var
   FirstLine: String;
   LineFields: TStringArray;
 begin
+  Kvp := nil;
+  ProgramArgs := nil;
+  FileLines := nil;
+  LineFields := nil;
+  
   if not FileExists(IniFileName) then begin
     writeLn('error (JBMd5ForFile): ini file does not exist ' + IniFileName);
     JBMd5ForFile := '';
@@ -66,6 +71,7 @@ begin
       Md5Exe := Kvp.GetValue(KeyExe);
       if not JBFileExists(Md5Exe) then begin
         writeLn('error: md5 executable not found: ' + Md5Exe);
+		Kvp.Free;
         JBMd5ForFile := '';
         exit;
       end;
@@ -101,11 +107,15 @@ begin
               FirstLine := FileLines[0];
               LineFields := FirstLine.Split(' ');
               if Length(LineFields) > 0 then begin
+			    Kvp.Free;
+				ProgramArgs.Free;
                 JBMd5ForFile := LineFields[FieldNumber-1];
                 exit;
               end
               else begin
                 if FirstLine.Length > 0 then begin
+				  Kvp.Free;
+				  ProgramArgs.Free;
                   JBMd5ForFile := FirstLine;
                   exit;
                 end
@@ -129,6 +139,8 @@ begin
       else begin
         writeLn('error: Md5ForFile - unable to execute md5 sum utility ' + Md5Exe);
       end;
+	  
+	  ProgramArgs.Free;
     end
     else begin
       writeLn('error: Md5ForFile - no value present for ' + KeyExe);
@@ -137,6 +149,8 @@ begin
   else begin
     writeLn('error: Md5ForFile - unable to retrieve platform config values');
   end;
+  
+  Kvp.Free;
 
   JBMd5ForFile := '';
 end;
@@ -149,6 +163,7 @@ var
   OsIdentifier: String;
   Reader: TIniReader;
 begin
+  Reader := nil;
   OsIdentifier := JBGetPlatformIdentifier;
   if (OsIdentifier = PLATFORM_UNKNOWN) or (OsIdentifier.Length = 0) then begin
     writeLn('error: unknown platform');
@@ -157,20 +172,26 @@ begin
   end;
 
   try
-    Reader := TIniReader.Create(IniFileName);
-    if not Reader.ReadSection(OsIdentifier, Kvp) then begin
-      writeLn('error: no config section present for ' + OsIdentifier);
+    try
+      Reader := TIniReader.Create(IniFileName);
+      if not Reader.ReadSection(OsIdentifier, Kvp) then begin
+        writeLn('error: no config section present for ' + OsIdentifier);
+        JBGetPlatformConfigValues := false;
+        exit;
+      end
+      else begin
+        JBGetPlatformConfigValues := true;
+        exit;
+      end;
+    except
+      writeLn('error: unable to read ' + IniFileName);
       JBGetPlatformConfigValues := false;
       exit;
-    end
-    else begin
-      JBGetPlatformConfigValues := true;
-      exit;
     end;
-  except
-    writeLn('error: unable to read ' + IniFileName);
-    JBGetPlatformConfigValues := false;
-    exit;
+  finally
+    if Reader <> nil then begin
+	  Reader.Free;
+	end;
   end;
 end;
 

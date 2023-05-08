@@ -95,6 +95,7 @@ type
                        StorageSys: TStorageSystem;
                        aContainerPrefix: String;
                        aDebugPrint: Boolean);
+	destructor Destroy; override;
     procedure InstallSignalHandlers;
     function IsExitRequested: Boolean; override;
     function Enter: Boolean;
@@ -266,6 +267,43 @@ begin
     writeLn('playlistImportDirPath = ' + PlaylistImportDirPath);
     writeLn('albumArtImportDirPath = ' + AlbumArtImportDirPath);
   end;
+end;
+
+//*******************************************************************************
+
+destructor TJukebox.Destroy;
+begin
+  if JukeboxOptions <> nil then begin
+    JukeboxOptions.Free;
+	JukeboxOptions := nil;
+  end;
+  
+  if StorageSystem <> nil then begin
+    StorageSystem.Free;
+	StorageSystem := nil;
+  end;
+  
+  if JukeboxDb <> nil then begin
+    JukeboxDb.Free;
+	JukeboxDb := nil;
+  end;
+  
+  //SongList: TListSongMetadata;
+  
+  if AudioPlayerProcess <> nil then begin
+    if AudioPlayerProcess.Running then begin
+    AudioPlayerProcess.Terminate(5);
+	end;
+	AudioPlayerProcess.Free;
+	AudioPlayerProcess := nil;
+  end;
+  
+  if SongDownloaderThread <> nil then begin
+    SongDownloaderThread.Free;
+	SongDownloaderThread := nil;
+  end;
+
+  inherited;
 end;
 
 //*******************************************************************************
@@ -538,7 +576,9 @@ begin
     ArtistLetter := Artist[1];
   end;
 
-  ContainerForSong := ContainerPrefix + ArtistLetter.ToLower + SFX_SONG_CONTAINER;
+  ContainerForSong := ContainerPrefix +
+                      ArtistLetter.ToLower +
+					  SFX_SONG_CONTAINER;
 end;
 
 //*******************************************************************************
@@ -573,6 +613,7 @@ var
   FileContents: TMemoryStream;
   cumulativeUploadKb: Double;
 begin
+  FileContents := nil;
   if JukeboxDb <> nil then begin
     if not JukeboxDb.IsOpen then begin
       exit;
@@ -698,6 +739,11 @@ begin
                 end;
               end;
             end;
+			
+			if FileContents <> nil then begin
+			  FileContents.Free;
+			  FileContents := nil;
+			end;
           end;
 
           if not DebugPrint then begin
@@ -719,7 +765,7 @@ begin
 
         end;
       end;
-    end;
+    end;  // for each file in import directory
 
     if not DebugPrint then begin
       {
@@ -1154,6 +1200,9 @@ var
   posPlaceholder: Integer;
   charsToStrip: array [0..1] of Char;
 begin
+  iniReader := nil;
+  kvpAudioPlayer := nil;
+  
   if not JBFileExists(AudioIniFilePath) then begin
     writeLn('error: missing ' + AudioIniFilePath + ' config file');
     exit;
@@ -1173,15 +1222,20 @@ begin
 
   iniReader := TIniReader.Create(AudioIniFilePath);
   if not iniReader.ReadFile then begin
+    iniReader.Free;
     writeLn('error: unable to read ini config file ' + AudioIniFilePath);
     exit;
   end;
 
   kvpAudioPlayer := TKeyValuePairs.Create;
   if not iniReader.ReadSection(osIdentifier, kvpAudioPlayer) then begin
+    kvpAudioPlayer.Free;
+	iniReader.Free;
     writeLn('error: no config section present for ' + osIdentifier);
     exit;
   end;
+  
+  iniReader.Free;
 
   key := AUDIO_PLAYER_EXE_FILE_NAME;
 
@@ -1200,6 +1254,7 @@ begin
     if AudioPlayerExeFileName.Length = 0 then begin
       writeLn('error: no value given for ' + key + ' within [' +
               osIdentifier + ']');
+	  kvpAudioPlayer.Free;
       exit;
     end;
 
@@ -1210,6 +1265,7 @@ begin
   else begin
     writeLn('error: ' + AUDIO_INI_FILE_NAME + ' missing value for ' +
             key + ' within [' + osIdentifier + ']');
+	kvpAudioPlayer.Free;
     exit;
   end;
 
@@ -1229,6 +1285,7 @@ begin
     if AudioPlayerCommandArgs.Length = 0 then begin
       writeLn('error: no value given for ' + key + ' within [' +
               osIdentifier + ']');
+	  kvpAudioPlayer.Free;
       exit;
     end;
 
@@ -1237,12 +1294,14 @@ begin
     if posPlaceholder = -1 then begin
       writeLn('error: ' + key + ' value does not contain placeholder ' +
               placeholder);
+	  kvpAudioPlayer.Free;
       exit;
     end;
   end
   else begin
     writeLn('error: ' + AUDIO_INI_FILE_NAME + ' missing value for ' +
             key + ' within [' + osIdentifier + ']');
+	kvpAudioPlayer.Free;
     exit;
   end;
 
@@ -1270,6 +1329,8 @@ begin
       end;
     end;
   end;
+  
+  kvpAudioPlayer.Free;
 
   if AudioPlayerResumeArgs.Length = 0 then begin
     AudioPlayerResumeArgs := AudioPlayerCommandArgs;
@@ -1449,6 +1510,7 @@ var
   DbFilePath: String;
   DbFileContents: TMemoryStream;
 begin
+  DbFileContents := nil;
   MetadataDbUpload := false;
   HaveMetadataContainer := false;
   if not StorageSystem.HasContainer(MetadataContainer) then
@@ -1477,6 +1539,11 @@ begin
       else begin
         writeLn('error: unable to read metadata db file');
       end;
+	  
+	  if DbFileContents <> nil then begin
+	    DbFileContents.Free;
+		DbFileContents := nil;
+	  end;
 
       if DebugPrint then begin
         if MetadataDbUpload then
@@ -1504,6 +1571,8 @@ var
   FileName: String;
   i: Integer;
 begin
+  FileContents := nil;
+  
   if JukeboxDb <> nil then begin
     if JukeboxDb.IsOpen then begin
       FileImportCount := 0;
@@ -1529,6 +1598,7 @@ begin
         FileName := DirListing[i];
         FullPath := JBPathJoin(PlaylistImportDirPath, FileName);
         ObjectName := FileName;
+		FileContents := nil;
         FileRead := ReadFileContents(FullPath, FileContents);
         if FileRead then begin
           if StorageSystem.PutObject(PlaylistContainer,
@@ -1547,6 +1617,10 @@ begin
             end;
           end;
         end;
+		if FileContents <> nil then begin
+		  FileContents.Free;
+		  FileContents := nil;
+		end;
       end;
 
       if FileImportCount > 0 then begin
@@ -2030,6 +2104,7 @@ begin
         FileName := DirListing[i];
         FullPath := JBPathJoin(AlbumArtImportDirPath, FileName);
         ObjectName := FileName;
+		FileContents := nil;
         FileRead := ReadFileContents(FullPath, FileContents);
         if FileRead then begin
           if StorageSystem.PutObject(AlbumArtContainer,
@@ -2039,6 +2114,10 @@ begin
             inc(FileImportCount);
           end;
         end;
+		if FileContents <> nil then begin
+		  FileContents.Free;
+		  FileContents := nil;
+		end;
       end;
 
       if FileImportCount > 0 then begin

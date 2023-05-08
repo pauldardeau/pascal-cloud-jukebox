@@ -161,6 +161,7 @@ var
   Fs: TFileStream;
   Success: Boolean;
 begin
+  Fs := nil;
   try
     Fs := TFileStream.Create(FilePath, fmCreate);
     Fs.Write(Contents[1], Length(Contents));
@@ -172,7 +173,9 @@ begin
     end;
   end;
 
-  Fs.Free;
+  if Fs <> nil then begin
+    Fs.Free;
+  end;
 
   JBFileWriteAllText := Success;
 end;
@@ -404,6 +407,7 @@ begin
   for i := 0 to listFiles.Count-1 do begin
     JBDeleteFile(JBPathJoin(DirPath, listFiles[i]));
   end;
+  listFiles.Free;
 end;
 
 //*******************************************************************************
