@@ -709,7 +709,7 @@ begin
 
     if ExitCode = 0 then begin
       if StdOut.Length > 0 then begin
-        OutputLines := StdOut.Split(LineEnding, LineEnding);
+        OutputLines := StdOut.Split(LineEnding);
         for i := 0 to Length(OutputLines)-1 do begin
           OutputLine := OutputLines[i];
           if OutputLine.Length > 0 then begin
