@@ -494,8 +494,11 @@ begin
 
   ScriptTemplate := '';
 
-  MetadataProps := SbMetadataProps.ToString();
-  MetadataProps := MetadataProps.Trim();
+  MetadataProps := SbMetadataProps.ToString;
+  MetadataProps := MetadataProps.Trim;
+  
+  SbMetadataProps.Free;
+  SbMetadataProps := nil;
 
   if MetadataProps.Length > 0 then begin
     ScriptTemplate := SCR_TEMPLATE_PUT_OBJECT_WITH_PROPERTIES + GetScriptSuffix;
@@ -662,6 +665,10 @@ var
   OutputLine: String;
   i: Integer;
 begin
+  ProgramArgs := nil;
+  FileLines := nil;
+  OutputLines := nil;
+  
   StdOut := '';
   StdErr := '';
   Success := false;
@@ -680,6 +687,8 @@ begin
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
+	  FileLines.Free;
+	  FileLines := nil;
       writeLn('RunProgram: unable to read file ' +
               ProgramPath);
       RunProgram := false;
@@ -693,6 +702,8 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
+	FileLines.Free;
+	FileLines := nil;
     IsShellScript := true;
   end;
 
@@ -731,6 +742,7 @@ begin
   end;
   
   ProgramArgs.Free;
+  ProgramArgs := nil;
 
   RunProgram := Success;
 end;
@@ -750,6 +762,9 @@ var
   ProgramArgs: TStringList;
   ExitCode: Integer;
 begin
+  FileLines := nil;
+  ProgramArgs := nil;
+  
   StdOut := '';
   StdErr := '';
   Success := false;
@@ -768,6 +783,8 @@ begin
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
+	  FileLines.Free;
+	  FileLines := nil;
       writeLn('RunProgram: unable to read file ' +
               ProgramPath);
       RunProgram := false;
@@ -781,6 +798,8 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
+	FileLines.Free;
+	FileLines := nil;
     IsShellScript := true;
   end;
 
@@ -821,6 +840,9 @@ var
   FileLines: TStringList;
   LineLength: Integer;
 begin
+  ProgramArgs := nil;
+  FileLines := nil;
+  
   StdOut := '';
   StdErr := '';
   Success := false;
@@ -837,6 +859,8 @@ begin
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
     if FileLines.Count = 0 then begin
+	  FileLines.Free;
+	  FileLines := nil;
       writeLn('RunProgram: unable to read file ' +
               ProgramPath);
       RunProgram := false;
@@ -850,6 +874,8 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
+	FileLines.Free;
+	FileLines := nil;
     IsShellScript := true;
   end;
 
@@ -888,6 +914,8 @@ var
   KvpValue: String;
   i: Integer;
 begin
+  KvpKeys := nil;
+  
   JBDeleteFileIfExists(RunScript);
 
   SourceFile := JBPathJoin(ScriptDirectory, ScriptTemplate);
@@ -915,6 +943,7 @@ begin
     FileText := FileText.Replace(KvpKey, KvpValue);
   end;
   KvpKeys.Free;
+  KvpKeys := nil;
 
   if not JBFileWriteAllText(RunScript, FileText) then begin
     PrepareRunScript := false;
