@@ -12,9 +12,13 @@ uses
 var
   jbMain: TJukeboxMain;
   args: TStringList;
-
+  i: Integer;
 begin
   args := TStringList.Create;
+  for i := 1 to ParamCount do begin
+    args.Add(ParamStr(i));
+  end;
+
   jbMain := TJukeboxMain.Create;
   jbMain.Run(args);
 end.
