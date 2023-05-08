@@ -52,6 +52,7 @@ end;
 
 destructor TSongMetadata.Destroy;
 begin
+  writeLn('TSongMetadata.Destroy');
   Fm.Free;
   inherited;
 end;

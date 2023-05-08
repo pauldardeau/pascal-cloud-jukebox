@@ -59,6 +59,7 @@ end;
 
 destructor TIniReader.Destroy;
 begin
+  writeLn('TIniReader.Destroy');
   inherited;
 end;
 

@@ -76,9 +76,13 @@ type
     Playlist: String;
     DebugMode: Boolean;
     Directory: String;
+	JukeboxOptions: TJukeboxOptions;
+	Jukebox: TJukebox;
+	StorageSystem: TStorageSystem;
 
   public
     constructor Create;
+	destructor Destroy; override;
     //function ConnectFsSystem(Credentials: TPropertySet;
     //                         Prefix: String): TStorageSystem;
     function ConnectS3System(Credentials: TPropertySet;
@@ -89,7 +93,7 @@ type
     function InitStorageSystem(StorageSys: TStorageSystem;
                                ContainerPrefix: String): Boolean;
     procedure ShowUsage;
-    function RunJukeboxCommand(jukebox: TJukebox; Command: String): Integer;
+    function RunJukeboxCommand(Command: String): Integer;
     function Run(ConsoleArgs: TStringList): Int32;
   end;
 
@@ -103,10 +107,39 @@ implementation
 constructor TJukeboxMain.Create;
 begin
   inherited;
+  StorageSystem := nil;
+  JukeboxOptions := nil;
+  Jukebox := nil;
   DebugMode := false;
 end;
 
 //*******************************************************************************
+
+destructor TJukeboxMain.Destroy;
+begin
+  writeLn('TJukeboxMain.Destroy');
+  if Jukebox <> nil then begin
+    Jukebox.Leave;
+    Jukebox.Free;
+	Jukebox := nil;
+  end;
+  
+  if JukeboxOptions <> nil then begin
+    JukeboxOptions.Free;
+	JukeboxOptions := nil;
+  end;
+  
+  if StorageSystem <> nil then begin
+    StorageSystem.Leave;
+	StorageSystem.Free;
+	StorageSystem := nil;
+  end;
+  
+  inherited;
+end;
+
+//*******************************************************************************
+
 {
 function TJukeboxMain.ConnectFsSystem(Credentials: TPropertySet;
                                       Prefix: String): TStorageSystem;
@@ -293,8 +326,7 @@ end;
 
 //*******************************************************************************
 
-function TJukeboxMain.RunJukeboxCommand(jukebox: TJukebox;
-                                        Command: String): Integer;
+function TJukeboxMain.RunJukeboxCommand(Command: String): Integer;
 var
   ExitCode: Integer;
   Shuffle: Boolean;
@@ -472,7 +504,6 @@ var
   StorageType: String;
   OptParser: TArgumentParser;
   Args: TPropertySet;
-  Options: TJukeboxOptions;
   Storage: String;
   ContainerPrefix: String;
   CredsFile: String;
@@ -480,8 +511,7 @@ var
   Key: String;
   Value: String;
   Command: String;
-  jukebox: TJukebox;
-  StorageSystem: TStorageSystem;
+  jb: TJukebox;
   FileContents: String;
   FileLines: TStringArray;
   FileLine: String;
@@ -495,8 +525,15 @@ begin
   Album := '';
   Song := '';
   Playlist := '';
+  
+  SupportedSystems := nil;
+  HelpCommands := nil;
+  NonHelpCommands := nil;
+  UpdateCommands := nil;
+  AllCommands := nil;
+  Creds := nil;
 
-  OptParser := TArgumentParser.Create(true);
+  OptParser := TArgumentParser.Create(false);
   OptParser.AddOptionalBoolFlag(ARG_PREFIX+ARG_DEBUG, 'run in debug mode');
   OptParser.AddOptionalIntArgument(ARG_PREFIX+ARG_FILE_CACHE_COUNT, 'number of songs to buffer in cache');
   OptParser.AddOptionalBoolFlag(ARG_PREFIX+ARG_INTEGRITY_CHECKS, 'check file integrity after download');
@@ -514,12 +551,15 @@ begin
     Run := 1;
     exit;
   end;
+  
+  OptParser.Free;
+  OptParser := nil;
 
-  Options := TJukeboxOptions.Create;
+  JukeboxOptions := TJukeboxOptions.Create;
 
   if Args.Contains(ARG_DEBUG) then begin
     DebugMode := true;
-    Options.DebugMode := true;
+    JukeboxOptions.DebugMode := true;
   end;
 
   if Args.Contains(ARG_FILE_CACHE_COUNT) then begin
@@ -527,14 +567,14 @@ begin
     if DebugMode then begin
       writeLn('setting file cache count=' + IntToStr(FileCacheCount));
     end;
-    Options.FileCacheCount := FileCacheCount;
+    JukeboxOptions.FileCacheCount := FileCacheCount;
   end;
 
   if Args.Contains(ARG_INTEGRITY_CHECKS) then begin
     if DebugMode then begin
       writeLn('setting integrity checks on');
     end;
-    Options.CheckDataIntegrity := true;
+    JukeboxOptions.CheckDataIntegrity := true;
   end;
 
   if Args.Contains(ARG_STORAGE) then begin
@@ -545,11 +585,16 @@ begin
     if not SupportedSystems.Contains(Storage) then begin
       writeLn('error: invalid storage type ' + Storage);
       writeLn('supported systems are: ' + SupportedSystems.ToString);
+	  SupportedSystems.Free;
+	  SupportedSystems := nil;
 	  Args.Free;
       Run := 1;
       exit;
     end
     else begin
+	  SupportedSystems.Free;
+	  SupportedSystems := nil;
+	  
       if DebugMode then begin
         writeLn('setting storage system to ' + Storage);
       end;
@@ -629,8 +674,9 @@ begin
     end;
 
     Command := Args.GetStringValue(ARG_COMMAND);
-
-    writeLn('retrieved ARG_COMMAND');
+	
+	Args.Free;
+	Args := nil;
 
     HelpCommands := TStringSet.Create;
     HelpCommands.Add(CMD_HELP);
@@ -695,13 +741,13 @@ begin
         //end;
 
         if Command = CMD_UPLOAD_METADATA_DB then begin
-          Options.SuppressMetadataDownload := true;
+          JukeboxOptions.SuppressMetadataDownload := true;
         end
         else begin
-          Options.SuppressMetadataDownload := false;
+          JukeboxOptions.SuppressMetadataDownload := false;
         end;
 
-        Options.Directory := Directory;
+        JukeboxOptions.Directory := Directory;
 
         StorageSystem := ConnectStorageSystem(StorageType,
                                               Creds,
@@ -709,15 +755,12 @@ begin
 
         if StorageSystem = nil then begin
           writeLn('error: unable to connect to storage system');
-		  Args.Free;
           Run := 1;
           exit;
         end;
 
         if not StorageSystem.Enter then begin
           writeLn('error: unable to enter storage system');
-		  StorageSystem.Free;
-		  Args.Free;
           Run := 1;
           exit;
         end;
@@ -729,20 +772,24 @@ begin
           else begin
             ExitCode := 1;
           end;
-		  StorageSystem.Free;
-		  Args.Free;
           Run := ExitCode;
           exit;
         end;
 
-        jukebox := TJukebox.Create(Options,
-                                   StorageSystem,
-                                   ContainerPrefix,
-                                   DebugMode);
-        if jukebox.Enter then begin
-          ExitCode := RunJukeboxCommand(jukebox, Command);
+        jb := TJukebox.Create(JukeboxOptions,
+                              StorageSystem,
+                              ContainerPrefix,
+                              DebugMode);
+        if jb.Enter then begin
+		  // the jukebox instance is now assigned to instance variable of JukeboxMain
+		  // and is now owned by JukeboxMain
+		  Jukebox := jb;
+		  jb := nil;
+          ExitCode := RunJukeboxCommand(Command);
         end
         else begin
+		  jb.Free;
+		  jb := nil;
           writeLn('error: unable to enter jukebox');
           ExitCode := 1;
         end;
@@ -750,10 +797,31 @@ begin
     end;
   end
   else begin
+    Args.Free;
+	Args := nil;
     writeLn('Error: no command given');
     ShowUsage;
   end;
-  Args.Free;
+  
+  if HelpCommands <> nil then begin
+    HelpCommands.Free;
+    HelpCommands := nil;
+  end;
+
+  if NonHelpCommands <> nil then begin
+    NonHelpCommands.Free;
+    NonHelpCommands := nil;
+  end;
+  
+  if UpdateCommands <> nil then begin
+    UpdateCommands.Free;
+    UpdateCommands := nil;
+  end;
+  
+  if AllCommands <> nil then begin
+    AllCommands.Free;
+    AllCommands := nil;
+  end;
 
   Run := ExitCode;
 end;

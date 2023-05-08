@@ -26,6 +26,7 @@ type
     constructor Create(aBoolValue: Boolean);
     constructor Create(aStringValue: String);
     constructor Create(aDoubleValue: Double);
+	destructor Destroy; override;
 
     function IsInt: Boolean;
     function IsLong: Boolean;
@@ -150,6 +151,14 @@ begin
   BoolValue := false;
   StringValue := '';
   DoubleValue := aDoubleValue;
+end;
+
+//*******************************************************************************
+
+destructor TPropertyValue.Destroy;
+begin
+  writeLn('TPropertyValue.Destroy');
+  inherited;
 end;
 
 //*******************************************************************************

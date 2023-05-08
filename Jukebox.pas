@@ -273,15 +273,7 @@ end;
 
 destructor TJukebox.Destroy;
 begin
-  if JukeboxOptions <> nil then begin
-    JukeboxOptions.Free;
-	JukeboxOptions := nil;
-  end;
-  
-  if StorageSystem <> nil then begin
-    StorageSystem.Free;
-	StorageSystem := nil;
-  end;
+  writeLn('TJukebox.Destroy');
   
   if JukeboxDb <> nil then begin
     JukeboxDb.Free;

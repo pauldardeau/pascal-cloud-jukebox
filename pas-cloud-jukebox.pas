@@ -21,4 +21,5 @@ begin
 
   jbMain := TJukeboxMain.Create;
   jbMain.Run(args);
+  jbMain.Free;
 end.

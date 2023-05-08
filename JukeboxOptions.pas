@@ -19,6 +19,7 @@ type
 
   public
     constructor Create;
+	destructor Destroy; override;
   end;
 
 implementation
@@ -34,6 +35,12 @@ begin
   NumberSongs := 0;
   SuppressMetadataDownload := false;
   Directory := '';
+end;
+
+destructor TJukeboxOptions.Destroy;
+begin
+  writeLn('TJukeboxOptions.Destroy');
+  inherited;
 end;
 
 end.

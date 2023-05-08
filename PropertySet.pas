@@ -62,6 +62,7 @@ end;
 
 destructor TPropertySet.Destroy;
 begin
+  writeLn('TPropertySet.Destroy');
   MapProps.Free;
   inherited;
 end;

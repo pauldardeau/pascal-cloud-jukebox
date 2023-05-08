@@ -45,6 +45,7 @@ end;
 
 destructor TPropertyList.Destroy;
 begin
+  writeLn('TPropertyList.Destroy');
   ListProps.Free;
   inherited;
 end;

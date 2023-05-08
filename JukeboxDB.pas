@@ -21,6 +21,7 @@ type
 
   public
     constructor Create(aMetadataDbFilePath: String; aDebugPrint: Boolean);
+	destructor Destroy; override;
     function IsOpen: Boolean;
     function Open: Boolean;
     function Close: Boolean;
@@ -52,6 +53,15 @@ begin
   DbConnection := TSQLite3Connection.Create(nil);
   MetadataDbFilePath := aMetadataDbFilePath;
   InTransaction := false;
+end;
+
+//*******************************************************************************
+
+destructor TJukeboxDB.Destroy;
+begin
+  writeLn('TJukeboxDB.Destroy');
+  Close;
+  inherited;
 end;
 
 //*******************************************************************************

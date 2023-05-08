@@ -24,7 +24,11 @@ type
 
   public
     constructor Create;
+	destructor Destroy; override;
   end;
+
+//*******************************************************************************
+//*******************************************************************************
 
 implementation
 
@@ -45,6 +49,16 @@ begin
   ContainerName := '';
   ObjectName := '';
 end;
+
+//*******************************************************************************
+
+destructor TFileMetadata.Destroy;
+begin
+  writeLn('TFileMetadata.Destroy');
+  inherited;
+end;
+
+//*******************************************************************************
 
 end.
 

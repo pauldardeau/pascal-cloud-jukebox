@@ -40,6 +40,7 @@ end;
 
 destructor TSongDownloader.Destroy;
 begin
+  writeLn('TSongDownloader.Destroy');
   inherited;
 end;
 
