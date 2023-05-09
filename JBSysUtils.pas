@@ -21,6 +21,8 @@ function JBFileReadAllText(FilePath: String): String;
 function JBFileReadAllBytes(FilePath: String): TMemoryStream;
 function JBFileWriteAllBytes(FilePath: String;
                              Contents: array of Byte): Boolean;
+function JBFileWriteAllBytes(FilePath: String;
+                             Contents: TMemoryStream): Boolean;
 function JBFileWriteAllText(FilePath: String;
                             Contents: String): Boolean;
 function JBGetFileSize(FilePath: String): Int64;
@@ -45,6 +47,7 @@ function JBCreateDirectory(DirPath: String): Boolean;
 procedure JBDeleteFilesInDirectory(DirPath: String);
 function JBGetPid(): Integer;
 function JBGetCurrentDirectory(): String;
+function JBDeleteDirectory(DirPath: String): Boolean;
 
 
 //*******************************************************************************
@@ -161,6 +164,29 @@ begin
   finally
     CloseFile(FileHandle);
   end;
+end;
+
+//*******************************************************************************
+
+function JBFileWriteAllBytes(FilePath: String; Contents: TMemoryStream): Boolean;
+var
+  Success: Boolean;
+  FileStream: TFileStream;
+begin
+  Success := false;
+  FileStream := TFileStream.Create(FilePath, fmCreate);
+
+  try
+    if Contents <> nil then begin
+      FileStream.Write(Contents, Contents.Size);
+      Success := true;
+    end;
+  finally
+    FileStream.Free;
+    FileStream := nil;
+  end;
+
+  JBFileWriteAllBytes := Success;
 end;
 
 //*******************************************************************************
@@ -506,6 +532,25 @@ begin
   s := '';
   GetDir(0, s);
   JBGetCurrentDirectory := s;
+end;
+
+//*******************************************************************************
+
+function JBDeleteDirectory(DirPath: String): Boolean;
+var
+  Success: Boolean;
+begin
+  Success := false;
+
+  if JBDirectoryExists(DirPath) then begin
+    try
+      RmDir(DirPath);
+      Success := true;
+    except
+    end;
+  end;
+
+  JBDeleteDirectory := Success;
 end;
 
 //*******************************************************************************

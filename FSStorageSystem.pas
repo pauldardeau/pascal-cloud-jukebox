@@ -213,7 +213,7 @@ begin
   ObjectAdded := false;
   if (ContainerName.Length > 0) and
      (ObjectName.Length > 0) and
-     (FileContents.length > 0) then begin
+     (FileContents.Size > 0) then begin
 
     ContainerDir := JBPathJoin(RootDir, ContainerName);
     if JBDirectoryExists(ContainerDir) then begin
@@ -250,7 +250,7 @@ begin
           writeLn('object name is missing, cannot put object');
         end
         else begin
-          if FileContents.Count = 0 then begin
+          if FileContents.Size = 0 then begin
             writeLn('object content is empty, cannot put object');
           end;
         end;
@@ -332,7 +332,7 @@ var
   MetaPath: String;
 begin
   ObjectDeleted := false;
-  if ContainerName.Length > 0 and ObjectName.Length > 0 then begin
+  if (ContainerName.Length > 0) and (ObjectName.Length > 0) then begin
     ContainerDir := JBPathJoin(RootDir, ContainerName);
     ObjectPath := JBPathJoin(ContainerDir, ObjectName);
 
@@ -392,12 +392,12 @@ begin
     if JBFileExists(ObjectPath) then begin
 	  try
         ObjFileContents := JBFileReadAllBytes(ObjectPath);
-        if ObjFileContents.Count > 0 then begin
+        if ObjFileContents.Size > 0 then begin
           if DebugMode then begin
             writeLn('attempting to write object to ' + LocalFilePath);
           end;
           if JBFileWriteAllBytes(LocalFilePath, ObjFileContents) then begin
-            BytesRetrieved := Int64(ObjFileContents.Count);
+            BytesRetrieved := Int64(ObjFileContents.Size);
           end;
         end
         else begin

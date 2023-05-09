@@ -7,7 +7,7 @@ interface
 uses
   Classes, JBSysUtils, Jukebox, PropertySet, StorageSystem, SysUtils,
   S3ExtStorageSystem, StringSet, ArgumentParser, JukeboxOptions,
-  PropertyValue;
+  PropertyValue, FSStorageSystem;
 
 const
   ARG_PREFIX           = '--';
@@ -83,8 +83,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    //function ConnectFsSystem(Credentials: TPropertySet;
-    //                         Prefix: String): TStorageSystem;
+    function ConnectFsSystem(Credentials: TPropertySet;
+                             Prefix: String): TStorageSystem;
     function ConnectS3System(Credentials: TPropertySet;
                              Prefix: String): TStorageSystem;
     function ConnectStorageSystem(SystemName: String;
@@ -140,7 +140,6 @@ end;
 
 //*******************************************************************************
 
-{
 function TJukeboxMain.ConnectFsSystem(Credentials: TPropertySet;
                                       Prefix: String): TStorageSystem;
 var
@@ -161,7 +160,7 @@ begin
     exit;
   end;
 end;
-}
+
 //*******************************************************************************
 
 function TJukeboxMain.ConnectS3System(Credentials: TPropertySet;
@@ -200,10 +199,10 @@ function TJukeboxMain.ConnectStorageSystem(SystemName: String;
                                            Credentials: TPropertySet;
                                            Prefix: String): TStorageSystem;
 begin
-  //if SystemName = SS_FS then begin
-  //  ConnectStorageSystem := ConnectFsSystem(Credentials, Prefix);
-  //end
-  if (SystemName = SS_S3) or (SystemName= 's3ext') then begin
+  if SystemName = SS_FS then begin
+    ConnectStorageSystem := ConnectFsSystem(Credentials, Prefix);
+  end
+  else if (SystemName = SS_S3) or (SystemName= 's3ext') then begin
     ConnectStorageSystem := ConnectS3System(Credentials, Prefix);
   end
   else begin
