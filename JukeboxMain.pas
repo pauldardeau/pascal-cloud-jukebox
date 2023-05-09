@@ -717,13 +717,10 @@ begin
     UpdateCommands.Add(CMD_IMPORT_ALBUM_ART);
     UpdateCommands.Add(CMD_INIT_STORAGE);
 
-    writeLn('merging all commands to AllCommands');
     AllCommands := TStringSet.Create;
     AllCommands.Append(HelpCommands);
     AllCommands.Append(NonHelpCommands);
     AllCommands.Append(UpdateCommands);
-
-    writeLn('checking commands');
 
     if not AllCommands.Contains(Command) then begin
       if Creds <> nil then begin
