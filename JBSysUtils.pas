@@ -11,29 +11,35 @@ const
   DOUBLE_DASHES = '--';
   DIR_PATH_SEPARATOR = PathDelim;
 
-function JBPathJoin(DirPath: String; FileName: String): String;
+function JBPathJoin(DirPath: String;
+                    FileName: String): String;
 function JBFileExists(FilePath: String): Boolean;
 function JBDirectoryExists(DirPath: String): Boolean;
 function JBDeleteFile(FilePath: String): Boolean;
 function JBDeleteFileIfExists(FilePath: String): Boolean;
 function JBFileReadAllText(FilePath: String): String;
 function JBFileReadAllBytes(FilePath: String): TMemoryStream;
-function JBFileWriteAllBytes(FilePath: String; Contents: array of Byte): Boolean;
-function JBFileWriteAllText(FilePath: String; Contents: String): Boolean;
+function JBFileWriteAllBytes(FilePath: String;
+                             Contents: array of Byte): Boolean;
+function JBFileWriteAllText(FilePath: String;
+                            Contents: String): Boolean;
 function JBGetFileSize(FilePath: String): Int64;
 function JBFileReadTextLines(FilePath: String): TStringList;
-function JBFileCopy(Source: String; Target: String): Boolean;
+function JBFileCopy(Source: String;
+                    Target: String): Boolean;
 function JBExecuteProgram(ProgramPath: String;
                           ProgramArgs: TStringList;
                           out ExitCode: Integer;
                           out StdOut: String;
                           out StdErr: String): Boolean;
 function JBListFilesInDirectory(DirPath: String): TStringList;
+function JBListDirsInDirectory(DirPath: String): TStringList;
 function JBPathSplitExt(FilePath: String;
                         out Root: String;
                         out Ext: String): Boolean;
 procedure JBSleepSeconds(Seconds: Integer);
-function JBFileAppendAllText(FilePath: String; Contents: String): Boolean;
+function JBFileAppendAllText(FilePath: String;
+                             Contents: String): Boolean;
 function JBGetFileExtension(FileName: String): String;
 function JBCreateDirectory(DirPath: String): Boolean;
 procedure JBDeleteFilesInDirectory(DirPath: String);
@@ -308,14 +314,60 @@ end;
 function JBListFilesInDirectory(DirPath: String): TStringList;
 var
   ListFiles: TStringList;
+  Info: TSearchRec;
+  {
+    Time: LongInt;
+	Size: Int64;
+	Attr: LongInt;
+	Name: RawByteString;
+	ExcludeAttr: LongInt;
+	FileHandle: THandle;
+	property TimeStamp: TDateTime; [r]
+  }
 begin
   ListFiles := TStringList.Create;
+  
   if JBDirectoryExists(DirPath) then begin
-    //TODO: implement JBListFilesInDirectory
-	//FindAllFiles(ListFiles, DirPath, '*', false);
+    if FindFirst('*', faAnyFile, Info) = 0 then begin
+      Repeat
+        With Info do begin
+		  // is it a file?
+          If (Attr and faDirectory) = 0 then begin
+		    ListFiles.Append(Name);
+		  end;
+        end;
+      Until FindNext(Info) <> 0;
+      FindClose(Info);
+    end;
   end;
 
   JBListFilesInDirectory := ListFiles;
+end;
+
+//*******************************************************************************
+
+function JBListDirsInDirectory(DirPath: String): TStringList;
+var
+  ListSubdirs: TStringList;
+  Info: TSearchRec;
+begin
+  ListSubdirs := TStringList.Create;
+  
+  if JBDirectoryExists(DirPath) then begin
+    if FindFirst('*', faAnyFile, Info) = 0 then begin
+      Repeat
+        With Info do begin
+		  // is it a directory?
+          If (Attr and faDirectory) <> 0 then begin
+		    ListSubdirs.Append(Name);
+		  end;
+        end;
+      Until FindNext(Info) <> 0;
+      FindClose(Info);
+    end;
+  end;
+
+  JBListDirsInDirectory := ListSubdirs;
 end;
 
 //*******************************************************************************
