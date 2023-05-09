@@ -310,7 +310,10 @@ var
   ListFiles: TStringList;
 begin
   ListFiles := TStringList.Create;
-  //TODO: implement JBListFilesInDirectory
+  if JBDirectoryExists(DirPath) then begin
+    //TODO: implement JBListFilesInDirectory
+	//FindAllFiles(ListFiles, DirPath, '*', false);
+  end;
 
   JBListFilesInDirectory := ListFiles;
 end;
@@ -378,9 +381,21 @@ end;
 function JBFileAppendAllText(FilePath: String; Contents: String): Boolean;
 var
   Success: Boolean;
+  FileHandle: Text;
 begin
   Success := false;
-  //TODO: implement JBFileAppendAllText
+  Assign(FileHandle, FilePath);
+  
+  if JBFileExists(FilePath) then begin
+	try
+	  Append(FileHandle);
+	  Write(FileHandle, Contents);
+	  Success := true;
+	finally
+	  Close(FileHandle);
+	end;
+  end;
+  
   JBFileAppendAllText := Success;
 end;
 

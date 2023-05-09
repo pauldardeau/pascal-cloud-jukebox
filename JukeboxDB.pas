@@ -5,7 +5,10 @@ unit JukeboxDB;
 interface
 
 uses
-  CRT, Classes, fgl, FileMetadata, SongMetadata, SysUtils, SQLDB, SQLite3Conn;
+  CRT, Classes, fgl, FileMetadata, JBUtils, SongMetadata, SysUtils, SQLDB, SQLite3Conn;
+
+const
+  STRING_OF_SINGLE_QUOTE = '#39';  // #39 is single quote character
 
 type
   TListSongMetadata = specialize TFPGObjectList<TSongMetadata>;
@@ -40,6 +43,8 @@ type
     procedure ShowGenres;
     procedure ShowAlbums;
     procedure ShowPlaylists;
+	function SongsForQueryResults(QueryResults: TSQLQuery): TListSongMetadata;
+	function SqlWhereClause: String;
   end;
 
 implementation
@@ -271,25 +276,147 @@ end;
 //*******************************************************************************
 
 function TJukeboxDB.SongsForArtist(ArtistName: String): TListSongMetadata;
+var
+  Songs: TListSongMetadata;
+  SqlQuery: String;
 begin
-  //TODO: implement SongsForArtist
-  SongsForArtist := nil;
+  Songs := TListSongMetadata.Create;
+  if DbConnection <> nil then begin
+    SqlQuery := 'SELECT song_uid,' +
+                       'file_time,' +
+                       'origin_file size,' +
+                       'stored_file size,' +
+                       'pad_char_count,' +
+                       'artist_name,' +
+                       'artist_uid,' +
+                       'song_name,' +
+                       'md5_hash,' +
+                       'compressed,' +
+                       'encrypted,' +
+                       'container_name,' +
+                       'object_name,' +
+                       'album_uid ' +
+                'FROM song' +
+                SqlWhereClause +
+                ' AND artist = :artist_name';
+    
+    DbQuery.SQL.Text := SqlQuery;
+	DbQuery.Params.ParamByName('artist_name').AsString := ArtistName;
+    BeginTransaction;
+    DbQuery.Open;
+
+    Songs := SongsForQueryResults(DbQuery);
+  end;
+
+  SongsForArtist := Songs;
 end;
 
 //*******************************************************************************
 
 function TJukeboxDB.RetrieveSong(SongUid: String): TSongMetadata;
+var
+  Song: TSongMetadata;
+  SqlQuery: String;
+  QueryResults: TListSongMetadata;
 begin
-  //TODO: implement RetrieveSong
-  RetrieveSong := nil;
+  Song := nil;
+
+  if DbConnection <> nil then begin
+    SqlQuery := 'SELECT song_uid,' +
+                       'file_time,' +
+                       'origin_file_size,' +
+                       'stored_file_size,' +
+                       'pad_char_count,' +
+                       'artist_name,' +
+                       'artist_uid,' +
+                       'song_name,' +
+                       'md5_hash,' +
+                       'compressed,' +
+                       'encrypted,' +
+                       'container_name,' +
+                       'object_name,' +
+                       'album_uid ' +
+                'FROM song ' +
+                'WHERE song_uid = :song_uid';
+
+    DbQuery.SQL.Text := SqlQuery;
+	DbQuery.Params.ParamByName('song_uid').AsString := SongUid;
+    BeginTransaction;
+    DbQuery.Open;
+    
+    QueryResults := SongsForQueryResults(DbQuery);
+    if QueryResults.Count > 0 then begin
+      Song := QueryResults[0];
+    end;
+  end;
+
+  RetrieveSong := Song;
 end;
 
 //*******************************************************************************
 
 function TJukeboxDB.RetrieveSongs(Artist: String; Album: String): TListSongMetadata;
+var
+  Songs: TListSongMetadata;
+  SqlQuery: String;
+  AddedClause: String;
+  EncodedArtist: String;
+  EncodedAlbum: String;
 begin
-  //TODO: implement RetrieveSongs
-  RetrieveSongs := nil;
+  Songs := TListSongMetadata.Create;
+  if DbConnection <> nil then begin
+    SqlQuery := 'SELECT song_uid,' +
+                       'file_time,' +
+                       'origin_file_size,' +
+                       'stored_file_size,' +
+                       'pad_char_count,' +
+                       'artist_name,' +
+                       'artist_uid,' +
+                       'song_name,' +
+                       'md5_hash,' +
+                       'compressed,' +
+                       'encrypted,' +
+                       'container_name,' +
+                       'object_name,' +
+                       'album_uid ' +
+                'FROM song';
+
+    SqlQuery := SqlQuery + SqlWhereClause;
+    
+    if Artist.Length > 0 then begin
+      EncodedArtist := EncodeValue(Artist);
+      if Album.Length > 0 then begin
+        EncodedAlbum := EncodeValue(Album);
+        AddedClause := ' AND object_name LIKE ' +
+		               STRING_OF_SINGLE_QUOTE +
+		               EncodedArtist +
+					   '--' +
+					   EncodedAlbum +
+					   '%' +
+					   STRING_OF_SINGLE_QUOTE;
+      end
+      else begin
+        AddedClause := ' AND object_name LIKE ' +
+		               STRING_OF_SINGLE_QUOTE +
+		               EncodedArtist +
+					   '--%' +
+					   STRING_OF_SINGLE_QUOTE;
+      end;
+      SqlQuery := SqlQuery + AddedClause;
+    end;
+
+    if DebugPrint then begin
+      writeLn('executing query: ' + SqlQuery);
+    end;
+
+    DbQuery.SQL.Text := SqlQuery;
+    BeginTransaction;
+    DbQuery.Open;
+
+    Songs := SongsForQueryResults(DbQuery);
+  end;
+  
+  RetrieveSongs := Songs;
 end;
 
 //*******************************************************************************
@@ -447,6 +574,53 @@ begin
   else begin
     writeLn('error: DbConnection is closed');
   end;
+end;
+
+//*******************************************************************************
+
+function TJukeboxDB.SongsForQueryResults(QueryResults: TSQLQuery): TListSongMetadata;
+var
+  ResultSongs: TListSongMetadata;
+  song: TSongMetadata;
+begin
+  ResultSongs := TListSongMetadata.Create;
+  
+  try
+    if QueryResults.Active then begin
+      while not QueryResults.EOF do begin
+        song := TSongMetadata.Create;
+        song.Fm.FileUid := QueryResults.Fields.Fields[0].AsString;
+        song.Fm.FileTime := QueryResults.Fields.Fields[1].AsString;
+        song.Fm.OriginFileSize := QueryResults.Fields.Fields[2].AsInteger;
+        song.Fm.StoredFileSize := QueryResults.Fields.Fields[3].AsInteger;
+        song.Fm.PadCharCount := QueryResults.Fields.Fields[4].AsInteger;
+        song.ArtistName := QueryResults.Fields.Fields[5].AsString;
+        song.ArtistUid := QueryResults.Fields.Fields[6].AsString;
+        song.SongName := QueryResults.Fields.Fields[7].AsString;
+        song.Fm.Md5Hash := QueryResults.Fields.Fields[8].AsString;
+        song.Fm.Compressed := QueryResults.Fields.Fields[9].AsInteger = 1;
+        song.Fm.Encrypted := QueryResults.Fields.Fields[10].AsInteger = 1;
+        song.Fm.ContainerName := QueryResults.Fields.Fields[11].AsString;
+        song.Fm.ObjectName := QueryResults.Fields.Fields[12].AsString;
+        song.AlbumUid := QueryResults.Fields.Fields[13].AsString;
+        ResultSongs.Add(song);
+        
+		QueryResults.Next;
+      end;
+    end;
+  finally
+    Commit;
+    QueryResults.Close;
+  end;
+
+  SongsForQueryResults := ResultSongs;
+end;
+
+//*******************************************************************************
+
+function TJukeboxDB.SqlWhereClause: String;
+begin
+  SqlWhereClause := ' WHERE encrypted = 0';
 end;
 
 //*******************************************************************************
