@@ -5,3 +5,4 @@ pas-cloud-jukebox
 pas-cloud-jukebox.exe
 s3_creds.txt
 audio_player.ini
+song-play/
