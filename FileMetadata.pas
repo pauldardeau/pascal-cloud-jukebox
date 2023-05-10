@@ -55,7 +55,6 @@ end;
 
 destructor TFileMetadata.Destroy;
 begin
-  writeLn('TFileMetadata.Destroy');
   inherited;
 end;
 
