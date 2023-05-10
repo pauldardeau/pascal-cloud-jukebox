@@ -516,11 +516,10 @@ end;
 function TJukebox.StoreSongMetadata(FsSong: TSongMetadata): Boolean;
 var
   StoreSuccess: Boolean;
-  //DbSong: TSongMetadata;
+  DbSong: TSongMetadata;
 begin
   StoreSuccess := false;
   if JukeboxDb <> nil then begin
-    {
     DbSong := JukeboxDb.RetrieveSong(FsSong.Fm.FileUid);
     if DbSong <> nil then begin
       if not FsSong.Equals(DbSong) then begin
@@ -536,7 +535,6 @@ begin
       // song is not in the database, insert it
       StoreSuccess := JukeboxDb.InsertSong(FsSong);
     end;
-    }
   end;
   StoreSongMetadata := StoreSuccess;
 end;
@@ -1956,14 +1954,15 @@ begin
   IsDeleted := false;
   if SongUid.Length > 0 then begin
     if JukeboxDb <> nil then begin
-      //DbDeleted := JukeboxDb.DeleteSong(SongUid);
-      //Container := ContainerForSong(SongUid);
-      //if Container.Length > 0 then begin
-      //  SsDeleted := StorageSystem.DeleteObject(Container, SongUid);
-      //  if DbDeleted and UploadMetadata then
-      //    UploadMetadataDb;
-      //  IsDeleted := DbDeleted or SsDeleted;
-      //end;
+      DbDeleted := JukeboxDb.DeleteSong(SongUid);
+      Container := ContainerForSong(SongUid);
+      if Container.Length > 0 then begin
+        SsDeleted := StorageSystem.DeleteObject(Container, SongUid);
+        if DbDeleted and UploadMetadata then begin
+          UploadMetadataDb;
+        end;
+        IsDeleted := DbDeleted or SsDeleted;
+      end;
     end;
   end;
 
