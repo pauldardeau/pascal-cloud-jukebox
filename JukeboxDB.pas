@@ -222,7 +222,14 @@ var
 begin
   DidSucceed := false;
 
-  //TODO: implement CreateTable
+  if DbConnection <> nil then begin
+    try
+      DbQuery.SQL.Text := SqlStatement;
+      DbQuery.ExecSQL;
+      DidSucceed := true;
+    finally
+    end;
+  end;
 
   CreateTable := DidSucceed;
 end;
@@ -289,12 +296,20 @@ begin
                                'playlist_uid TEXT NOT NULL REFERENCES playlist(playlist_uid),' +
                                'song_uid TEXT NOT NULL REFERENCES song(song_uid));';
 
-    DidSucceed := CreateTable(CreateGenreTable) and
-                  CreateTable(CreateArtistTable) and
-                  CreateTable(CreateAlbumTable) and
-                  CreateTable(CreateSongTable) and
-                  CreateTable(CreatePlaylistTable) and
-                  CreateTable(CreatePlaylistSongTable);
+    if BeginTransaction then begin
+      DidSucceed := CreateTable(CreateGenreTable) and
+                    CreateTable(CreateArtistTable) and
+                    CreateTable(CreateAlbumTable) and
+                    CreateTable(CreateSongTable) and
+                    CreateTable(CreatePlaylistTable) and
+                    CreateTable(CreatePlaylistSongTable);
+      if DidSucceed then begin
+        DidSucceed := Commit;
+      end
+      else begin
+        Rollback;
+      end;
+    end;
   end;
 
   CreateTables := DidSucceed;
