@@ -16,6 +16,7 @@ PropertySet.o \
 PropertyValue.o \
 StorageSystem.o \
 S3ExtStorageSystem.o \
+FSStorageSystem.o \
 SongDownloader.o \
 SongDownloaderThread.o \
 SongMetadata.o \
