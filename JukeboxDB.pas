@@ -779,6 +779,7 @@ function TJukeboxDB.InsertPlaylist(PlUid: String;
 var
   InsertSuccess: Boolean;
   Sql: String;
+  RowsAffected: Int64;
 begin
   InsertSuccess := false;
 
@@ -786,8 +787,6 @@ begin
      (PlUid.Length > 0) and
      (PlName.Length > 0) then begin
 
-    //TODO: implement InsertPlaylist
-    {
     if not BeginTransaction then begin
       InsertPlaylist := false;
       exit;
@@ -795,19 +794,20 @@ begin
 
     Sql := 'INSERT INTO playlist VALUES (:pl_uid,:pl_name,:pl_desc)';
 
-    const Args = new PropertyList;
-    Args.Append(new PropertyValue(PlUid));
-    Args.Append(new PropertyValue(PlName));
-    Args.Append(new PropertyValue(PlDesc));
+    DbQuery.SQL.Text := Sql;
+    DbQuery.Params.ParamByName('pl_uid').AsString := PlUid;
+    DbQuery.Params.ParamByName('pl_name').AsString := PlName;
+    DbQuery.Params.ParamByName('pl_desc').AsString := PlDesc;
 
-    const RowsAffected = DbConnection.Execute(SqlStatement, Args);
+    DbQuery.ExecSQL;
+
+    RowsAffected := DbQuery.RowsAffected;
     if RowsAffected = 0 then begin
       Rollback;
     end
     else begin
       InsertSuccess := Commit;
     end;
-    }
   end;
 
   InsertPlaylist := InsertSuccess;
@@ -819,6 +819,7 @@ function TJukeboxDB.DeleteSong(SongUid: String): Boolean;
 var
   WasDeleted: Boolean;
   Sql: String;
+  RowsAffected: Int64;
 begin
   WasDeleted := false;
   if DbConnection <> nil then begin
@@ -829,14 +830,14 @@ begin
         exit;
       end;
 
-      //TODO: implement DeleteSong
-      {
-      const ArgList = new PropertyList;
-      ArgList.Append(new PropertyValue(SongUid));
-
       Sql := 'DELETE FROM song WHERE song_uid = :song_uid';
-      const RowsAffected = DbConnection.Execute(SqlStatement, SongUid);
 
+      DbQuery.SQL.Text := Sql;
+      DbQuery.Params.ParamByName('song_uid').AsString := SongUid;
+
+      DbQuery.ExecSQL;
+
+      RowsAffected := DbQuery.RowsAffected;
       if RowsAffected = 0 then begin
         Rollback;
         writeLn('error: unable to delete song ' + SongUid);
@@ -844,7 +845,6 @@ begin
       else begin
         WasDeleted := Commit;
       end;
-      }
     end;
   end;
 
@@ -857,6 +857,7 @@ function TJukeboxDB.DeletePlaylist(PlName: String): Boolean;
 var
   DeleteSuccess: Boolean;
   Sql: String;
+  RowsAffected: Int64;
 begin
   DeleteSuccess := false;
 
@@ -868,19 +869,18 @@ begin
 
     Sql := 'DELETE FROM playlist WHERE playlist_name = :playlist_name';
 
-    //TODO: implement DeletePlaylist
-    {
-    const Args = new PropertyList;
-    Args.Append(new PropertyValue(PlName));
+    DbQuery.SQL.Text := Sql;
+    DbQuery.Params.ParamByName('playlist_name').AsString := PlName;
 
-    const RowsAffected = DbConnection.Execute(SqlQuery, Args);
+    DbQuery.ExecSQL;
+
+    RowsAffected := DbQuery.RowsAffected;
     if RowsAffected = 0 then begin
       Rollback;
     end
     else begin
       DeleteSuccess := Commit;
     end;
-    }
   end;
 
   DeletePlaylist := DeleteSuccess;
