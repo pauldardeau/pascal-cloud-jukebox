@@ -1987,16 +1987,17 @@ begin
         writeLn('no artist songs in jukebox');
       end
       else begin
-        //for i := 0 to TheSongList.Count-1 do begin
-        //  Song := TheSongList[i];
-        //  if not DeleteSong(Song.Fm.ObjectName, false) then begin
-        //    writeLn('error deleting song ' + Song.Fm.ObjectName);
-        //    DeleteArtist := false;
-        //    exit;
-        //  end;
-        //end;
-        UploadMetadataDb;
         IsDeleted := true;
+        for i := 0 to TheSongList.Count-1 do begin
+          Song := TheSongList[i];
+          if not DeleteSong(Song.Fm.ObjectName, false) then begin
+            writeLn('error deleting song ' + Song.Fm.ObjectName);
+            IsDeleted := false;
+          end;
+        end;
+        if IsDeleted then begin
+          UploadMetadataDb;
+        end;
       end;
       TheSongList.Free;
       TheSongList := nil;
@@ -2038,9 +2039,9 @@ begin
             //DIFFERENCE
             if StorageSystem.DeleteObject(ContainerPrefix + Song.Fm.ContainerName,
                                           Song.Fm.ObjectName) then begin
-              //inc(NumSongsDeleted);
+              inc(NumSongsDeleted);
               // delete song metadata
-              //JukeboxDb.DeleteSong(Song.Fm.ObjectName);
+              JukeboxDb.DeleteSong(Song.Fm.ObjectName);
             end
             else begin
               writeLn('error: unable to delete song ' +
@@ -2081,6 +2082,7 @@ begin
   if JukeboxDb <> nil then begin
     ObjectName := JukeboxDb.GetPlaylist(PlaylistName);
     if ObjectName.Length > 0 then begin
+      //TODO: implement DeletePlaylist
     end
     else begin
       writeLn('invalid playlist name');
