@@ -116,6 +116,7 @@ begin
       while not Eof(FileHandle) do begin
         readln(FileHandle, FileLine);
         Sb.Append(FileLine);
+        Sb.Append(LineEnding);
       end;
     except
       On E: EInOutError do begin
@@ -308,28 +309,31 @@ begin
       Process.Parameters.Add(ProgramArgs[i]);
     end;
 
-    Process.Options := Process.Options + [poWaitOnExit];
+    Process.Options := Process.Options + [poUsePipes, poWaitOnExit];
+
     Process.Execute;
+
     ExitCode := Process.ExitCode;
 
-    StringList := TStringList.Create;
-
-    StringList.LoadFromStream(Process.Output);
-    for i := 0 to StringList.Count-1 do begin
-      StdOut := StdOut + StringList[i];
+    if Process.Output <> nil then begin
+      StringList := TStringList.Create;
+      StringList.LoadFromStream(Process.Output);
+      for i := 0 to StringList.Count-1 do begin
+        StdOut := StdOut + StringList[i] + LineEnding;
+      end;
+      StringList.Free;
     end;
 
-    StringList.Clear;
-
-    StringList.LoadFromStream(Process.Stderr);
-    for i := 0 to StringList.Count-1 do begin
-      StdErr := StdErr + StringList[i];
+    if Process.Stderr <> nil then begin
+      StringList := TStringList.Create;
+      StringList.LoadFromStream(Process.Stderr);
+      for i := 0 to StringList.Count-1 do begin
+        StdErr := StdErr + StringList[i] + LineEnding;
+      end;
+      StringList.Free;
     end;
   finally
     Process.Free;
-    if StringList <> nil then begin
-      StringList.Free;
-    end;
   end;
 
   JBExecuteProgram := ExitCode = 0;

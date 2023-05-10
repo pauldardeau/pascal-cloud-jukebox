@@ -161,10 +161,6 @@ var
   ScriptTemplate: String;
   RunScript: String;
 begin
-  if DebugMode then begin
-    writeLn('entering ListAccountContainers');
-  end;
-
   ListOfContainers := TStringList.Create;
   Kvp := TKeyValuePairs.Create;
   PopulateCommonVariables(Kvp);
@@ -360,7 +356,6 @@ begin
   try
     if PrepareRunScript(ScriptTemplate, RunScript, Kvp) then begin
       if RunProgram(RunScript, StdOut) then begin
-        writeLn(StdOut);
         Success := true;
       end;
     end;
@@ -667,6 +662,7 @@ var
   OutputLines: TStringArray;
   OutputLine: String;
   i: Integer;
+  ProgramSuccess: Boolean;
 begin
   ProgramArgs := nil;
   FileLines := nil;
@@ -717,12 +713,13 @@ begin
     ProgramArgs.Add(ProgramPath);
   end;
 
-  if JBExecuteProgram(ExecutablePath,
-                      ProgramArgs,
-                      ExitCode,
-                      StdOut,
-                      StdErr) then begin
+  ProgramSuccess := JBExecuteProgram(ExecutablePath,
+                                     ProgramArgs,
+                                     ExitCode,
+                                     StdOut,
+                                     StdErr);
 
+  if ProgramSuccess then begin
     if DebugMode then begin
       writeLn('ExitCode = ' + IntToStr(ExitCode));
       writeLn('*********** START STDOUT **************');
@@ -742,6 +739,9 @@ begin
       end;
       Success := true;
     end;
+  end
+  else begin
+    writeLn('JBExecuteProgram failed');
   end;
 
   ProgramArgs.Free;
@@ -947,6 +947,10 @@ begin
   end;
   KvpKeys.Free;
   KvpKeys := nil;
+
+  // uncommenting this next line can be helpful to quickly see how the
+  // scripts are being populated
+  //writeLn(FileText);
 
   if not JBFileWriteAllText(RunScript, FileText) then begin
     PrepareRunScript := false;
