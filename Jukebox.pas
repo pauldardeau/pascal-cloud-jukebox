@@ -12,7 +12,7 @@ uses
   CRT, Classes, fgl, FileMetadata, JukeboxDB, JukeboxOptions, PropertySet,
   PropertyValue, AbstractJukebox, SongDownloader, SongDownloaderThread,
   SongMetadata, StorageSystem, SysUtils, JBSysUtils, JBUtils, JBPlatform,
-  Process, IniReader, KeyValuePairs;
+  Process, IniReader, KeyValuePairs, fpjson, jsonparser;
 
 const
   DOUBLE_DASHES = '--';
@@ -1712,7 +1712,13 @@ var
   EncodedArtistAlbum: String;
   JsonFileName: String;
   LocalJsonFile: String;
-  AlbumJsonContents: String;
+  FileStream: TFileStream;
+  Parser: TJSONParser;
+  jData: TJSONData;
+  jObject: TJSONObject;
+  jArray: TJSONArray;
+  i: Integer;
+  TrackObject: String;
 begin
   Success := false;
   EncodedArtistAlbum := EncodeArtistAlbum(Artist, AlbumName);
@@ -1722,42 +1728,31 @@ begin
                              JsonFileName,
                              LocalJsonFile) > 0 then begin
 
-    AlbumJsonContents := JBFileReadAllText(LocalJsonFile);
-    if AlbumJsonContents.Length > 0 then begin
-      //TODO: implement GetAlbumTrackObjectList JSON parsing
-      {
-      const Deserializer = new JsonDeserializer(AlbumJsonContents);
-      const AlbumJson = Deserializer.Deserialize;
-      const TrackList = AlbumJson.Item['tracks'] as JsonArray;
-      if TrackList <> nil then begin
-        NumberTracks := TrackList.Count;
-        if NumberTracks > 0 then begin
-          for i := 0 to NumberTracks-1 do begin
-            Track := TrackList.Item[i];
-            TrackObject := Track.Item['object'];
-            if TrackObject <> nil then begin
-              ListTrackObjects.Add(TrackObject.ToString);
-            end;
+    FileStream := TFileStream.Create(LocalJsonFile, fmOpenRead);
+    try
+      Parser := TJSONParser.Create(FileStream);
+      try
+        try
+          jData := Parser.Parse;
+          jObject := jData as TJSONObject;
+          jArray := jObject.Arrays['tracks'];
+
+          for i := 0 to jArray.Count-1 do begin
+            jObject := jArray.Items[i] as TJSONObject;
+            TrackObject := jObject.Get('object');
+            ListTrackObjects.Add(TrackObject);
           end;
           Success := true;
+        except
+          on e: exception do writeLn('exception: ' + e.message);
         end;
+      finally
+        Parser.Free;
+        Parser := nil;
       end;
-      //-----------------------------------------
-      const Album = Deserializer.Read<Album>;
-      if Album <> nil then begin
-        NumberTracks := Album.Tracks.Count;
-        if NumberTracks > 0 then begin
-          for i := 0 to NumberTracks-1 do begin
-            Track := Album.Tracks.Item[i];
-            ListTrackObjects.Add(Track.ObjectName);
-          end;
-          Success := true;
-        end;
-      end;
-      }
-    end
-    else begin
-      writeLn('Album json file is empty');
+    finally
+      FileStream.Free;
+      FileStream := nil;
     end;
   end
   else begin
@@ -1778,92 +1773,62 @@ var
   FileExtensions: TStringList;
   SongsAdded: Integer;
   SongFound: Boolean;
+  FileStream: TFileStream;
+  Parser: TJSONParser;
+  jData: TJSONData;
+  jObject: TJSONObject;
+  jArray: TJSONArray;
+  SongArtist: String;
+  SongAlbum: String;
+  SongName: String;
+  EncodedSong: String;
+  i: Integer;
+  j: Integer;
+  FileExtension: String;
+  SongUid: String;
+  Song: TSongMetadata;
 begin
   Success := false;
+  SongsAdded := 0;
+
   JsonFileName := EncodeValue(PlaylistName) + JSON_FILE_EXT;
   LocalJsonFile := JBPathJoin(SongPlayDirPath, JsonFileName);
+
   if StorageSystem.GetObject(PlaylistContainer,
                              JsonFileName,
                              LocalJsonFile) > 0 then begin
 
-    PlaylistJsonContents := JBFileReadAllText(LocalJsonFile);
-    if PlaylistJsonContents.Length > 0 then begin
-      FileExtensions := TStringList.Create;
-      FileExtensions.Add('.flac');
-      FileExtensions.Add('.m4a');
-      FileExtensions.Add('.mp3');
-      //TODO: implement GetPlaylistSongs JSON parsing
-      {
-      const Deserializer = new JsonDeserializer(PlaylistJsonContents);
+    FileStream := TFileStream.Create(LocalJsonFile, fmOpenRead);
+    
+    try
+      Parser := TJSONParser.Create(FileStream);
+   
+      try
+        try
+          jData := Parser.Parse;
+          jObject := jData as TJSONObject;
+          jArray := jObject.Arrays['songs'];
 
-      const PlaylistJson = Deserializer.Deserialize;
-      const TheSongList = PlaylistJson.Item['songs'] as JsonArray;
-      if TheSongList <> nil then begin
-        const plNumberSongs = TheSongList.Count;
-        if plNumberSongs > 0 then begin
-          SongsAdded := 0;
+          FileExtensions := TStringList.Create;
+          FileExtensions.Add('.flac');
+          FileExtensions.Add('.m4a');
+          FileExtensions.Add('.mp3');
 
-          for i := 0 to plNumberSongs-1 do begin
-            SongJson := TheSongList.Item[i];
-
-            ItemArtist := SongJson.Item['artist'];
-            ItemAlbum := SongJson.Item['album'];
-            ItemSong := SongJson.Item['song'];
-
-            if (ItemArtist <> nil) and (ItemAlbum <> nil) and (ItemSong <> nil) then begin
-              PlArtist := ItemArtist.ToString;
-              PlAlbum := ItemAlbum.ToString;
-              PlSong := ItemSong.ToString;
-              EncodedSong := EncodeArtistAlbumSong(PlArtist,
-                                                   PlAlbum,
-                                                   PlSong);
-              SongFound := false;
-
-              for each FileExtension in FileExtensions do begin
-                SongUid := EncodedSong + FileExtension;
-                Song := self.JukeboxDb.RetrieveSong(SongUid);
-                if Song <> nil then begin
-                  ListSongs.Add(Song);
-                  inc(SongsAdded);
-                  SongFound := true;
-                  break;
-                end;
-              end;
-
-              if not SongFound then begin
-                writeLn('error: unable to retrieve metadata for ' + EncodedSong);
-              end;
-            end
-            else begin
-              if DebugPrint then begin
-                writeLn('error: JSON missing one or more of ["artist", "album", "song"]');
-              end;
-            end;
-          end;
-
-          if SongsAdded > 0 then begin
-            Success := true;
-          end;
-        end;
-      end;
-      //---------------------------------------------------------
-      Playlist := Deserializer.Read<Playlist>;
-      if Playlist <> nil then begin
-        if Playlist.Songs.Count > 0 then begin
-          SongsAdded := 0;
-
-          for each plSongObj in Playlist.Songs do begin
-            plArtist := plSongObj.Artist;
-            plAlbum := plSongObj.Album;
-            plSong := plSongObj.Song;
-            EncodedSong := EncodeArtistAlbumSong(plArtist,
-                                                 plAlbum,
-                                                 plSong);
+          for i := 0 to jArray.Count-1 do begin
+            jObject := jArray.Items[i] as TJSONObject;
+            SongArtist := jObject.Get('artist');
+            SongAlbum := jObject.Get('album');
+            SongName := jObject.Get('song');
+            EncodedSong := EncodeArtistAlbumSong(SongArtist,
+                                                 SongAlbum,
+                                                 SongName);
             SongFound := false;
 
-            for each FileExtension in FileExtensions do begin
-              const SongUid = EncodedSong + FileExtension;
-              const Song = self.JukeboxDb.RetrieveSong(SongUid);
+            for j := 0 to FileExtensions.Count-1 do begin
+              FileExtension := FileExtensions[j];
+              SongUid := EncodedSong + FileExtension;
+              Song := JukeboxDB.RetrieveSong(SongUid);
+
               if Song <> nil then begin
                 ListSongs.Add(Song);
                 inc(SongsAdded);
@@ -1876,18 +1841,21 @@ begin
               writeLn('error: unable to retrieve metadata for ' + EncodedSong);
             end;
           end;
+        except
+          on e: exception do writeLn('exception: ' + e.message);
+        end;
+      finally
+        Parser.Free;
+        Parser := nil;
 
-          if SongsAdded > 0 then begin
-            Success := true;
-          end;
+        if FileExtensions <> nil then begin
+          FileExtensions.Free;
+          FileExtensions := nil;
         end;
       end;
-      }
-      FileExtensions.Free;
-      FileExtensions := nil;
-    end
-    else begin
-      writeLn('Playlist json file is empty');
+    finally
+      FileStream.Free;
+      FileStream := nil;
     end;
   end
   else begin
