@@ -1726,6 +1726,7 @@ begin
 
     AlbumJsonContents := JBFileReadAllText(LocalJsonFile);
     if AlbumJsonContents.Length > 0 then begin
+      //TODO: implement GetAlbumTrackObjectList JSON parsing
       {
       const Deserializer = new JsonDeserializer(AlbumJsonContents);
       const AlbumJson = Deserializer.Deserialize;
@@ -1793,6 +1794,7 @@ begin
       FileExtensions.Add('.flac');
       FileExtensions.Add('.m4a');
       FileExtensions.Add('.mp3');
+      //TODO: implement GetPlaylistSongs JSON parsing
       {
       const Deserializer = new JsonDeserializer(PlaylistJsonContents);
 
