@@ -20,8 +20,8 @@ type
     constructor Create(aRootDir: String;
                        aDebugMode: Boolean);
     destructor Destroy; override;
-	
-	function Enter: Boolean; override;
+
+    function Enter: Boolean; override;
     procedure Leave; override;
     function ListAccountContainers: TStringList; override;
     function GetContainerNames: TStringList; override;
@@ -114,7 +114,7 @@ begin
     for i := 0 to ListContainers.Count-1 do begin
       if ContainerName = ListContainers[i] then begin
         HasContainer := true;
-		exit;
+        exit;
       end;
     end;
   end;
@@ -390,7 +390,7 @@ begin
     ObjectPath := JBPathJoin(ContainerDir, ObjectName);
 
     if JBFileExists(ObjectPath) then begin
-	  try
+      try
         ObjFileContents := JBFileReadAllBytes(ObjectPath);
         if ObjFileContents.Size > 0 then begin
           if DebugMode then begin
@@ -403,12 +403,12 @@ begin
         else begin
           writeLn('error: unable to read object file ' + ObjectPath);
         end;
-	  finally
-	    if ObjFileContents <> nil then begin
-		  ObjFileContents.Free;
-		  ObjFileContents := nil;
-		end;
-	  end;
+      finally
+        if ObjFileContents <> nil then begin
+          ObjFileContents.Free;
+          ObjFileContents := nil;
+        end;
+      end;
     end;
   end;
 

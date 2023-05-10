@@ -274,14 +274,12 @@ end;
 destructor TJukebox.Destroy;
 begin
   writeLn('TJukebox.Destroy');
-  
+
   if JukeboxDb <> nil then begin
     JukeboxDb.Free;
     JukeboxDb := nil;
   end;
-  
-  //SongList: TListSongMetadata;
-  
+
   if AudioPlayerProcess <> nil then begin
     if AudioPlayerProcess.Running then begin
       AudioPlayerProcess.Terminate(5);
@@ -289,12 +287,12 @@ begin
     AudioPlayerProcess.Free;
     AudioPlayerProcess := nil;
   end;
-  
+
   if SongDownloaderThread <> nil then begin
     SongDownloaderThread.Free;
     SongDownloaderThread := nil;
   end;
-  
+
   if SongList <> nil then begin
     SongList.Free;
     SongList := nil;
@@ -798,7 +796,7 @@ begin
 
     if CumulativeUploadTime > 0 then begin
       cumulativeUploadKb := Double(CumulativeUploadBytes) / 1000.0;
-      {writeLn('average upload throughput = ' {0} KB/sec, 
+      {writeLn('average upload throughput = ' {0} KB/sec,
               cumulativeUploadKb/CumulativeUploadTime); }
     end;
   end;
@@ -1032,7 +1030,7 @@ begin
       for i := 0 to Length(Args)-1 do begin
         AudioPlayerProcess.Parameters.Add(Args[i]);
       end;
-  
+
       AudioPlayerProcess.Options := AudioPlayerProcess.Options + [poWaitOnExit];
       AudioPlayerProcess.Execute;
       ExitCode := AudioPlayerProcess.ExitCode;
@@ -1102,7 +1100,7 @@ begin
       inc(SongFileCount);
     end;
   end;
-  
+
   DirListing.Free;
   DirListing := nil;
 
@@ -1132,7 +1130,7 @@ begin
   if DlSongs.Count > 0 then begin
     DownloadSongs(DlSongs);
   end;
-  
+
   DlSongs.Free;
   DlSongs := nil;
 end;
@@ -1233,7 +1231,7 @@ var
 begin
   iniReader := nil;
   kvpAudioPlayer := nil;
-  
+
   if not JBFileExists(AudioIniFilePath) then begin
     writeLn('error: missing ' + AudioIniFilePath + ' config file');
     exit;
@@ -1265,7 +1263,7 @@ begin
     writeLn('error: no config section present for ' + osIdentifier);
     exit;
   end;
-  
+
   iniReader.Free;
   iniReader := nil;
 
@@ -1361,7 +1359,7 @@ begin
       end;
     end;
   end;
-  
+
   kvpAudioPlayer.Free;
   kvpAudioPlayer := nil;
 
@@ -1381,7 +1379,7 @@ begin
     SongList.Free;
     SongList := nil;
   end;
-  
+
   SongList := aSongList;
   NumberSongs := aSongList.Count;
   SongIndex := 0;
@@ -1523,7 +1521,7 @@ end;
 function TJukebox.ReadFileContents(FilePath: String;
                                    out Contents: TMemoryStream): Boolean;
 var
-  FileContents: TMemoryStream;  
+  FileContents: TMemoryStream;
   Success: Boolean;
 begin
   FileContents := JBFileReadAllBytes(FilePath);
@@ -1579,7 +1577,7 @@ begin
       else begin
         writeLn('error: unable to read metadata db file');
       end;
-  
+
       if DbFileContents <> nil then begin
         DbFileContents.Free;
         DbFileContents := nil;
@@ -1612,7 +1610,7 @@ var
   i: Integer;
 begin
   FileContents := nil;
-  
+
   if JukeboxDb <> nil then begin
     if JukeboxDb.IsOpen then begin
       FileImportCount := 0;
@@ -1664,7 +1662,7 @@ begin
           FileContents := nil;
         end;
       end;
-  
+
       DirListing.Free;
       DirListing := nil;
 
@@ -1699,7 +1697,7 @@ begin
   else begin
     writeLn('no playlists found');
   end;
-  
+
   ContainerContents.Free;
   ContainerContents := nil;
 end;

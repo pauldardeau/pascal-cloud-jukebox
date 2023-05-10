@@ -499,7 +499,7 @@ begin
 
   MetadataProps := SbMetadataProps.ToString;
   MetadataProps := MetadataProps.Trim;
-  
+
   SbMetadataProps.Free;
   SbMetadataProps := nil;
 
@@ -671,7 +671,7 @@ begin
   ProgramArgs := nil;
   FileLines := nil;
   OutputLines := nil;
-  
+
   StdOut := '';
   StdErr := '';
   Success := false;
@@ -743,7 +743,7 @@ begin
       Success := true;
     end;
   end;
-  
+
   ProgramArgs.Free;
   ProgramArgs := nil;
 
@@ -767,7 +767,7 @@ var
 begin
   FileLines := nil;
   ProgramArgs := nil;
-  
+
   StdOut := '';
   StdErr := '';
   Success := false;
@@ -824,7 +824,7 @@ begin
   end;
 
   ProgramArgs.Free;
-  
+
   RunProgram := Success;
 end;
 
@@ -845,7 +845,7 @@ var
 begin
   ProgramArgs := nil;
   FileLines := nil;
-  
+
   StdOut := '';
   StdErr := '';
   Success := false;
@@ -898,7 +898,7 @@ begin
       Success := true;
     end;
   end;
-  
+
   ProgramArgs.Free;
 
   RunProgram := Success;
@@ -918,7 +918,7 @@ var
   i: Integer;
 begin
   KvpKeys := nil;
-  
+
   JBDeleteFileIfExists(RunScript);
 
   SourceFile := JBPathJoin(ScriptDirectory, ScriptTemplate);

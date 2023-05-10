@@ -5,7 +5,7 @@ unit AbstractJukebox;
 interface
 
 uses
-  CRT, Classes, SongMetadata, SysUtils; 
+  CRT, Classes, SongMetadata, SysUtils;
 
 type
   TAbstractJukebox = Class(TObject)

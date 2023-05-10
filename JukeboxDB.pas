@@ -331,7 +331,7 @@ begin
   end
   else begin
     writeLn('error: DbConnection is closed');
-  end; 
+  end;
   HaveTables := HaveTablesInDb;
 end;
 
@@ -344,7 +344,7 @@ var
 begin
   PlObject := '';
   if PlaylistName.Length > 0 then begin
-    If IsOpen then begin
+    if IsOpen then begin
       Sql := 'SELECT playlist_uid ' +
              'FROM playlist ' +
              'WHERE playlist_name = :playlist_name';
@@ -395,7 +395,7 @@ begin
                 'FROM song' +
                 SqlWhereClause +
                 ' AND artist = :artist_name';
-    
+
     DbQuery.SQL.Text := SqlQuery;
     DbQuery.Params.ParamByName('artist_name').AsString := ArtistName;
     BeginTransaction;
@@ -439,7 +439,7 @@ begin
     DbQuery.Params.ParamByName('song_uid').AsString := SongUid;
     BeginTransaction;
     DbQuery.Open;
-    
+
     QueryResults := SongsForQueryResults(DbQuery);
     if QueryResults.Count > 0 then begin
       Song := QueryResults[0];
@@ -478,7 +478,7 @@ begin
                 'FROM song';
 
     SqlQuery := SqlQuery + SqlWhereClause;
-    
+
     if Artist.Length > 0 then begin
       EncodedArtist := EncodeValue(Artist);
       if Album.Length > 0 then begin
@@ -511,7 +511,7 @@ begin
 
     Songs := SongsForQueryResults(DbQuery);
   end;
-  
+
   RetrieveSongs := Songs;
 end;
 
@@ -680,7 +680,7 @@ var
   song: TSongMetadata;
 begin
   ResultSongs := TListSongMetadata.Create;
-  
+
   try
     if QueryResults.Active then begin
       while not QueryResults.EOF do begin
@@ -700,7 +700,7 @@ begin
         song.Fm.ObjectName := QueryResults.Fields.Fields[12].AsString;
         song.AlbumUid := QueryResults.Fields.Fields[13].AsString;
         ResultSongs.Add(song);
-        
+
         QueryResults.Next;
       end;
     end;
@@ -760,11 +760,11 @@ begin
     else
       IntValue := 0;
     DbQuery.Params.ParamByName('compressed').AsInteger := IntValue;
-   
+
     if Song.Fm.Encrypted then
       IntValue := 1
     else
-      IntValue := 0; 
+      IntValue := 0;
     DbQuery.Params.ParamByName('encrypted').AsInteger := IntValue;
     DbQuery.Params.ParamByName('container_name').AsString := Song.Fm.ContainerName;
     DbQuery.Params.ParamByName('object_name').AsString := Song.Fm.ObjectName;

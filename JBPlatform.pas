@@ -50,7 +50,7 @@ begin
   ProgramArgs := nil;
   FileLines := nil;
   LineFields := nil;
-  
+
   if not FileExists(IniFileName) then begin
     writeLn('error (JBMd5ForFile): ini file does not exist ' + IniFileName);
     JBMd5ForFile := '';
@@ -139,7 +139,7 @@ begin
       else begin
         writeLn('error: Md5ForFile - unable to execute md5 sum utility ' + Md5Exe);
       end;
-  
+
       ProgramArgs.Free;
     end
     else begin
@@ -149,7 +149,7 @@ begin
   else begin
     writeLn('error: Md5ForFile - unable to retrieve platform config values');
   end;
-  
+
   Kvp.Free;
 
   JBMd5ForFile := '';
@@ -213,7 +213,7 @@ begin
   PlatformId := PLATFORM_WINDOWS;
 {$ENDIF}
 
-  if PlatformId.Length = 0 then begin  
+  if PlatformId.Length = 0 then begin
     PlatformId := PLATFORM_UNKNOWN;
   end;
 

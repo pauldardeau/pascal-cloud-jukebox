@@ -123,18 +123,18 @@ begin
     Jukebox.Free;
     Jukebox := nil;
   end;
-  
+
   if JukeboxOptions <> nil then begin
     JukeboxOptions.Free;
     JukeboxOptions := nil;
   end;
-  
+
   if StorageSystem <> nil then begin
     StorageSystem.Leave;
     StorageSystem.Free;
     StorageSystem := nil;
   end;
-  
+
   inherited;
 end;
 
@@ -264,7 +264,7 @@ begin
 
   sb.Append(CMD_HELP + '               - show this help message');
   sb.Append(LineEnding);
-  
+
   sb.Append(CMD_IMPORT_ALBUM_ART + '   - import all album art from album-art-import subdirectory');
   sb.Append(LineEnding);
 
@@ -524,7 +524,7 @@ begin
   Album := '';
   Song := '';
   Playlist := '';
-  
+
   SupportedSystems := nil;
   HelpCommands := nil;
   NonHelpCommands := nil;
@@ -550,7 +550,7 @@ begin
     Run := 1;
     exit;
   end;
-  
+
   OptParser.Free;
   OptParser := nil;
 
@@ -593,7 +593,7 @@ begin
     else begin
       SupportedSystems.Free;
       SupportedSystems := nil;
-  
+
       if DebugMode then begin
         writeLn('setting storage system to ' + Storage);
       end;
@@ -727,7 +727,7 @@ begin
         Creds.Free;
         Creds := nil;
       end;
-  
+
       writeLn('Unrecognized command ' + Command);
       writeLn('');
       ShowUsage;
@@ -805,7 +805,7 @@ begin
     writeLn('Error: no command given');
     ShowUsage;
   end;
-  
+
   if HelpCommands <> nil then begin
     HelpCommands.Free;
     HelpCommands := nil;
@@ -815,12 +815,12 @@ begin
     NonHelpCommands.Free;
     NonHelpCommands := nil;
   end;
-  
+
   if UpdateCommands <> nil then begin
     UpdateCommands.Free;
     UpdateCommands := nil;
   end;
-  
+
   if AllCommands <> nil then begin
     AllCommands.Free;
     AllCommands := nil;

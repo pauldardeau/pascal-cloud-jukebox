@@ -279,7 +279,7 @@ begin
   finally
     MemBuffer.Free;
   end;
-  
+
   JBFileCopy := Success;
 end;
 
@@ -331,7 +331,7 @@ begin
       StringList.Free;
     end;
   end;
-  
+
   JBExecuteProgram := ExitCode = 0;
 end;
 
@@ -343,24 +343,24 @@ var
   Info: TSearchRec;
   {
     Time: LongInt;
-	Size: Int64;
-	Attr: LongInt;
-	Name: RawByteString;
-	ExcludeAttr: LongInt;
-	FileHandle: THandle;
-	property TimeStamp: TDateTime; [r]
+    Size: Int64;
+    Attr: LongInt;
+    Name: RawByteString;
+    ExcludeAttr: LongInt;
+    FileHandle: THandle;
+    property TimeStamp: TDateTime; [r]
   }
 begin
   ListFiles := TStringList.Create;
-  
+
   if JBDirectoryExists(DirPath) then begin
     if FindFirst('*', faAnyFile, Info) = 0 then begin
       Repeat
         With Info do begin
-		  // is it a file?
-          If (Attr and faDirectory) = 0 then begin
-		    ListFiles.Append(Name);
-		  end;
+          // is it a file?
+          if (Attr and faDirectory) = 0 then begin
+            ListFiles.Append(Name);
+          end;
         end;
       Until FindNext(Info) <> 0;
       FindClose(Info);
@@ -378,15 +378,15 @@ var
   Info: TSearchRec;
 begin
   ListSubdirs := TStringList.Create;
-  
+
   if JBDirectoryExists(DirPath) then begin
     if FindFirst('*', faAnyFile, Info) = 0 then begin
       Repeat
         With Info do begin
-		  // is it a directory?
-          If (Attr and faDirectory) <> 0 then begin
-		    ListSubdirs.Append(Name);
-		  end;
+          // is it a directory?
+          if (Attr and faDirectory) <> 0 then begin
+            ListSubdirs.Append(Name);
+          end;
         end;
       Until FindNext(Info) <> 0;
       FindClose(Info);
@@ -463,17 +463,17 @@ var
 begin
   Success := false;
   Assign(FileHandle, FilePath);
-  
+
   if JBFileExists(FilePath) then begin
-	try
-	  Append(FileHandle);
-	  Write(FileHandle, Contents);
-	  Success := true;
-	finally
-	  Close(FileHandle);
-	end;
+    try
+      Append(FileHandle);
+      Write(FileHandle, Contents);
+      Success := true;
+    finally
+      Close(FileHandle);
+    end;
   end;
-  
+
   JBFileAppendAllText := Success;
 end;
 

@@ -199,7 +199,7 @@ var
   PropValue: String;
 begin
   Encoded := TStringBuilder.Create;
-  
+
   try
     for i := 0 to MapProps.Count-1 do begin
       PropName := MapProps.Keys[i];
@@ -396,7 +396,7 @@ end;
 
 function TPropertySet.ReadFromFile(FileName: String): Boolean;
 begin
-  ReadFromFile := PopulateFromString(JBFileReadAllText(FileName)); 
+  ReadFromFile := PopulateFromString(JBFileReadAllText(FileName));
 end;
 
 //*******************************************************************************

@@ -251,7 +251,7 @@ var
   Success: Boolean;
 begin
   Map := TKeyValuePairs.Create;
-  
+
   try
     if not ReadSection(Section, Map) then begin
       writeLn('IniReader ReadSection returned false');
