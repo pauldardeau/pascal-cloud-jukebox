@@ -58,7 +58,6 @@ end;
 
 destructor TArgumentParser.Destroy;
 begin
-  writeLn('TArgumentParser.Destroy');
   DictAllReservedWords.Free;
   DictBoolOptions.Free;
   DictIntOptions.Free;

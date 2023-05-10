@@ -41,7 +41,6 @@ end;
 
 destructor TKeyValuePairs.Destroy;
 begin
-  writeLn('TKeyValuePairs.Destroy');
   DictKeyValues.Free;
   inherited;
 end;

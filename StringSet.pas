@@ -41,7 +41,6 @@ end;
 
 destructor TStringSet.Destroy;
 begin
-  writeLn('TStringSet.Destroy');
   MapStrings.Free;
   inherited;
 end;
