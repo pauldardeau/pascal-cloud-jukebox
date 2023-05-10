@@ -25,6 +25,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function IsEqualTo(aFm: TFileMetadata): Boolean;
   end;
 
 //*******************************************************************************
@@ -56,6 +57,23 @@ destructor TFileMetadata.Destroy;
 begin
   writeLn('TFileMetadata.Destroy');
   inherited;
+end;
+
+//*******************************************************************************
+
+function TFileMetadata.IsEqualTo(aFm: TFileMetadata): Boolean;
+begin
+  IsEqualTo := (FileUid = aFm.FileUid) and
+               (FileName = aFm.FileName) and
+               (OriginFileSize = aFm.OriginFileSize) and
+               (StoredFileSize = aFm.StoredFileSize) and
+               (PadCharCount = aFm.PadCharCount) and
+               (FileTime = aFm.FileTime) and
+               (Md5Hash = aFm.Md5Hash) and
+               (Compressed = aFm.Compressed) and
+               (Encrypted = aFm.Encrypted) and
+               (ContainerName = aFm.ContainerName) and
+               (ObjectName = aFm.ObjectName);
 end;
 
 //*******************************************************************************

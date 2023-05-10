@@ -756,15 +756,12 @@ begin
 
   DbSong := RetrieveSong(Song.Fm.FileUid);
   if DbSong <> nil then begin
-    //TODO: implement StoreSongMetadata
-    {
-    if Song <> DbSong then begin
+    if not Song.IsEqualTo(DbSong) then begin
       Success := UpdateSong(Song);
     end
     else begin
       Success := true;  // no insert or update needed (already up-to-date)
     end;
-    }
   end
   else begin
     // song is not in the database, insert it

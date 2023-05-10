@@ -20,6 +20,7 @@ type
     constructor Create;
     constructor Create(aFm: TFileMetadata);
     destructor Destroy; override;
+    function IsEqualTo(Song: TSongMetadata): Boolean;
   end;
 
 implementation
@@ -55,6 +56,17 @@ begin
   writeLn('TSongMetadata.Destroy');
   Fm.Free;
   inherited;
+end;
+
+//*******************************************************************************
+
+function TSongMetadata.IsEqualTo(Song: TSongMetadata): Boolean;
+begin
+  IsEqualTo := Fm.IsEqualTo(Song.Fm) and
+               (ArtistUid = Song.ArtistUid) and
+               (ArtistName = Song.ArtistName) and
+               (AlbumUid = Song.AlbumUid) and
+               (SongName = Song.SongName);
 end;
 
 //*******************************************************************************
