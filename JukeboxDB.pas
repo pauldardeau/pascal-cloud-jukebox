@@ -788,10 +788,62 @@ end;
 function TJukeboxDB.UpdateSong(Song: TSongMetadata): Boolean;
 var
   UpdateSuccess: Boolean;
+  Sql: String;
+  IntValue: Integer;
 begin
   UpdateSuccess := false;
 
-  //TODO: implement UpdateSong
+  if (DbConnection <> nil) and (Song <> nil) then begin
+    Sql := 'UPDATE song ' +
+           'SET file_time=:file_time,' +
+               'origin_file_size=:origin_file_size,' +
+               'stored_file_size=:stored_file_size,' +
+               'pad_char_count=:pad_char_count,' +
+               'artist_name=:artist_name,' +
+               'artist_uid=:artist_uid,' +
+               'song_name=:song_name,' +
+               'md5_hash=:md5_hash,' +
+               'compressed=:compressed,' +
+               'encrypted=:encrypted,' +
+               'container_name=:container_name,' +
+               'object_name=:object_name,' +
+               'album_uid=:album_uid ' +
+           'WHERE song_uid = :song_uid';
+
+    DbQuery.SQL.Text := Sql;
+    DbQuery.Params.ParamByName('file_time').AsString := Song.Fm.FileTime;
+    DbQuery.Params.ParamByName('origin_file_size').AsInteger := Song.Fm.OriginFileSize;
+    DbQuery.Params.ParamByName('stored_file_size').AsInteger := Song.Fm.StoredFileSize;
+    DbQuery.Params.ParamByName('pad_char_count').AsInteger := Song.Fm.PadCharCount;
+    DbQuery.Params.ParamByName('artist_name').AsString := Song.ArtistName;
+    DbQuery.Params.ParamByName('artist_uid').AsString := '';
+    DbQuery.Params.ParamByName('song_name').AsString := Song.SongName;
+    DbQuery.Params.ParamByName('md5_hash').AsString := Song.Fm.Md5Hash;
+    if Song.Fm.Compressed then
+      IntValue := 1
+    else
+      IntValue := 0;
+    DbQuery.Params.ParamByName('compressed').AsInteger := IntValue;
+
+    if Song.Fm.Encrypted then
+      IntValue := 1
+    else
+      IntValue := 0;
+    DbQuery.Params.ParamByName('encrypted').AsInteger := IntValue;
+    DbQuery.Params.ParamByName('container_name').AsString := Song.Fm.ContainerName;
+    DbQuery.Params.ParamByName('object_name').AsString := Song.Fm.ObjectName;
+    DbQuery.Params.ParamByName('album_uid').AsString := Song.AlbumUid;
+    DbQuery.Params.ParamByName('song_uid').AsString := Song.Fm.FileUid;
+
+    DbQuery.ExecSQL;
+
+    if DbQuery.RowsAffected = 0 then begin
+      Rollback;
+    end
+    else begin
+      UpdateSuccess := Commit;
+    end;
+  end;
 
   UpdateSong := UpdateSuccess;
 end;
