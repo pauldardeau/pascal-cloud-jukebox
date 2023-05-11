@@ -1797,10 +1797,10 @@ begin
                              LocalJsonFile) > 0 then begin
 
     FileStream := TFileStream.Create(LocalJsonFile, fmOpenRead);
-    
+
     try
       Parser := TJSONParser.Create(FileStream);
-   
+
       try
         try
           jData := Parser.Parse;
@@ -2074,18 +2074,22 @@ end;
 function TJukebox.DeletePlaylist(PlaylistName: String): Boolean;
 var
   IsDeleted: Boolean;
+  Container: String;
   ObjectName: String;
-  DbDeleted: Boolean;
 begin
   IsDeleted := false;
+
   if JukeboxDb <> nil then begin
-    ObjectName := JukeboxDb.GetPlaylist(PlaylistName);
-    if ObjectName.Length > 0 then begin
-      //TODO: implement DeletePlaylist
+    if JukeboxDb.DeletePlaylist(PlaylistName) then begin
+      IsDeleted := true;
     end
-    else begin
-      writeLn('invalid playlist name');
-    end;
+  end;
+
+  Container := PlaylistContainer;
+  ObjectName := PlaylistName + JSON_FILE_EXT;
+
+  if StorageSystem.DeleteObject(Container, ObjectName) then begin
+    IsDeleted := true;
   end;
 
   DeletePlaylist := IsDeleted;
