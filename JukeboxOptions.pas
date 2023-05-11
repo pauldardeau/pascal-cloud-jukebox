@@ -44,7 +44,6 @@ end;
 
 destructor TJukeboxOptions.Destroy;
 begin
-  writeLn('TJukeboxOptions.Destroy');
   inherited;
 end;
 

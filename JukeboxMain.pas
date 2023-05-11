@@ -117,7 +117,6 @@ end;
 
 destructor TJukeboxMain.Destroy;
 begin
-  writeLn('TJukeboxMain.Destroy');
   if Jukebox <> nil then begin
     Jukebox.Leave;
     Jukebox.Free;

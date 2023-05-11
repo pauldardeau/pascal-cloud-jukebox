@@ -126,7 +126,6 @@ end;
 
 destructor TS3ExtStorageSystem.Destroy;
 begin
-  writeLn('TS3ExtStorageSystem.Destroy');
   ListContainers.Free;
   inherited;
 end;

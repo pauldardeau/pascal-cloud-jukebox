@@ -273,8 +273,6 @@ end;
 
 destructor TJukebox.Destroy;
 begin
-  writeLn('TJukebox.Destroy');
-
   if JukeboxDb <> nil then begin
     JukeboxDb.Free;
     JukeboxDb := nil;
@@ -1187,11 +1185,6 @@ begin
           end;
           if aSongList.Count = ListTrackObjects.Count then begin
             HaveSongs := true;
-            if SongList <> nil then begin
-              SongList.Free;
-              SongList := nil;
-            end;
-            SongList := aSongList;
           end;
         end;
       end
@@ -1204,14 +1197,16 @@ begin
     end;
 
     if not HaveSongs then begin
-      if SongList <> nil then begin
-        SongList.Free;
-        SongList := nil;
-      end;
-      SongList := JukeboxDb.RetrieveSongs(Artist, Album);
+      aSongList := JukeboxDb.RetrieveSongs(Artist, Album);
     end;
 
-    PlaySongList(SongList, Shuffle);
+    if aSongList <> nil then begin
+      PlaySongList(aSongList, Shuffle);
+    end
+    else begin
+      aSongList.Free;
+      aSongList := nil;
+    end;
   end;
 end;
 
@@ -1412,6 +1407,7 @@ begin
   end;
 
   if Shuffle then begin
+    //TODO: implement shuffling of song list
     //JBShuffleList(aSongList);
   end;
 

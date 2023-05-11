@@ -74,7 +74,6 @@ end;
 
 destructor TJukeboxDB.Destroy;
 begin
-  writeLn('TJukeboxDB.Destroy');
   Close;
   inherited;
 end;
@@ -121,20 +120,22 @@ var
   DidClose: Boolean;
 begin
   DidClose := false;
-  if DbConnection.Connected then begin
-    DbTrans.Commit;
-    DbQuery.Close;
-    DbConnection.Close;
+  if DbConnection <> nil then begin
+    if DbConnection.Connected then begin
+      DbTrans.Commit;
+      DbQuery.Close;
+      DbConnection.Close;
 
-    DbQuery.Free;
-    DbTrans.Free;
-    DbConnection.Free;
+      DbQuery.Free;
+      DbTrans.Free;
+      DbConnection.Free;
 
-    DbTrans := nil;
-    DbQuery := nil;
-    DbConnection := nil;
+      DbTrans := nil;
+      DbQuery := nil;
+      DbConnection := nil;
 
-    DidClose := true;
+      DidClose := true;
+    end;
   end;
   Close := DidClose;
 end;
