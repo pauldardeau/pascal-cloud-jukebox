@@ -1367,6 +1367,10 @@ procedure TJukebox.PlaySongList(aSongList: TListSongMetadata; Shuffle: Boolean);
 var
   pidAsText: String;
   pidFilePath: String;
+  n: Integer;
+  k: Integer;
+  j: Integer;
+  Value: TSongMetadata;
 begin
   if SongList <> nil then begin
     SongList.Free;
@@ -1407,8 +1411,23 @@ begin
   end;
 
   if Shuffle then begin
-    //TODO: implement shuffling of song list
-    //JBShuffleList(aSongList);
+    Randomize;
+    n := SongList.Count;
+
+    while (n > 1) do begin
+      j := Random(n);
+      dec(n);
+      if j < 0 then begin
+        // workaround bug
+        k := -j;
+      end
+      else begin
+        k := j;
+      end;
+      Value := SongList[k];
+      SongList[k] := SongList[n];
+      SongList[n] := Value;
+    end;
   end;
 
   writeLn('downloading first song...');
