@@ -1074,13 +1074,22 @@ var
   FilePath: String;
   si: TSongMetadata;
 begin
-  // scan the play list directory to see if we need to download more songs
+  // scan the song play directory to see if we need to download more songs
   DirListing := JBListFilesInDirectory(SongPlayDirPath);
+
+  if DebugPrint then begin
+    writeLn('Found ' + IntToStr(DirListing.Count) + ' files in song play dir');
+  end;
+
   if DirListing.Count = 0 then begin
     DirListing.Free;
     DirListing := nil;
     // log error
     exit;
+  end;
+
+  if DebugPrint then begin
+    writeLn('starting scan of existing song files');
   end;
 
   DlSongs := TListSongMetadata.Create;
@@ -1100,7 +1109,15 @@ begin
   DirListing.Free;
   DirListing := nil;
 
+  if DebugPrint then begin
+    writeLn('found ' + IntToStr(SongFileCount) + ' existing songs');
+  end;
+
   FileCacheCount := JukeboxOptions.FileCacheCount;
+
+  if DebugPrint then begin
+    writeLn('FileCacheCount = ' + IntToStr(FileCacheCount));
+  end;
 
   if SongFileCount < FileCacheCount then begin
     // start looking at the next song in the list
@@ -1125,6 +1142,11 @@ begin
 
   if DlSongs.Count > 0 then begin
     DownloadSongs(DlSongs);
+  end
+  else begin
+    if DebugPrint then begin
+      writeLn('Not calling DownloadSongs b/c DlSongs is empty');
+    end;
   end;
 
   DlSongs.Free;
@@ -1147,6 +1169,11 @@ begin
         writeLn('Not downloading more songs b/c Downloader <> nil or ' +
                 'DownloadThread <> nil');
       end;
+    end;
+  end
+  else begin
+    if DebugPrint then begin
+      writeLn('Not downloading more songs b/c we were given an empty list');
     end;
   end;
 end;
@@ -1413,12 +1440,16 @@ begin
   end;
 
   if Shuffle then begin
+    if DebugPrint then begin
+      writeLn('started shuffling of song list');
+    end;
+
     Randomize;
     n := SongList.Count;
 
     while (n > 1) do begin
-      j := Random(n);
       dec(n);
+      j := Random(n+1);
       if j < 0 then begin
         // workaround bug
         k := -j;
@@ -1429,6 +1460,10 @@ begin
       Value := SongList[k];
       SongList[k] := SongList[n];
       SongList[n] := Value;
+    end;
+
+    if DebugPrint then begin
+      writeLn('completed shuffling');
     end;
   end;
 
