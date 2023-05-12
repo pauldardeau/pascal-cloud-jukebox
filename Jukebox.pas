@@ -12,7 +12,7 @@ uses
   CRT, Classes, fgl, FileMetadata, JukeboxDB, JukeboxOptions, PropertySet,
   PropertyValue, AbstractJukebox, SongDownloader, SongDownloaderThread,
   SongMetadata, StorageSystem, SysUtils, JBSysUtils, JBUtils, JBPlatform,
-  Process, IniReader, KeyValuePairs, fpjson, jsonparser;
+  Process, IniReader, KeyValuePairs, fpjson, jsonparser, Math;
 
 const
   DOUBLE_DASHES = '--';
@@ -1396,9 +1396,7 @@ procedure TJukebox.PlaySongList(aSongList: TListSongMetadata; Shuffle: Boolean);
 var
   pidAsText: String;
   pidFilePath: String;
-  n: Integer;
-  k: Integer;
-  j: Integer;
+  i: Integer;
   Value: TSongMetadata;
 begin
   if SongList <> nil then begin
@@ -1445,21 +1443,9 @@ begin
     end;
 
     Randomize;
-    n := SongList.Count;
 
-    while (n > 1) do begin
-      dec(n);
-      j := Random(n+1);
-      if j < 0 then begin
-        // workaround bug
-        k := -j;
-      end
-      else begin
-        k := j;
-      end;
-      Value := SongList[k];
-      SongList[k] := SongList[n];
-      SongList[n] := Value;
+    for i := SongList.Count - 1 downto 0 do begin
+      SongList.Exchange(i, RandomRange(0, i + 1));
     end;
 
     if DebugPrint then begin
