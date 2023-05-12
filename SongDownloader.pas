@@ -13,7 +13,7 @@ type
   TSongDownloader = Class(TObject)
   private
     jukebox: TAbstractJukebox;     // weak
-    ListSongs: TListSongMetadata;  // weak
+    ListSongs: TListSongMetadata;
 
   public
     constructor Create(jb: TAbstractJukebox; aSongList: TListSongMetadata);
@@ -41,6 +41,8 @@ end;
 destructor TSongDownloader.Destroy;
 begin
   writeLn('TSongDownloader.Destroy');
+  ListSongs.Free;
+  ListSongs := nil;
   inherited;
 end;
 
@@ -51,7 +53,10 @@ var
   i: Integer;
   Song: TSongMetadata;
 begin
-  if listSongs.Count > 0 then begin
+  writeLn('Executing SongDownloader.Run');
+
+  if ListSongs.Count > 0 then begin
+    writeLn('Have songs to download');
     jukebox.BatchDownloadStart;
 
     for i := 0 to ListSongs.Count-1 do begin
@@ -64,9 +69,10 @@ begin
       end;
     end;
     jukebox.BatchDownloadComplete;
+    writeLn('background download completed');
   end
   else begin
-    writeLn('SongDownloader.run: listSongs is empty');
+    writeLn('SongDownloader.Run: listSongs is empty');
   end;
 end;
 

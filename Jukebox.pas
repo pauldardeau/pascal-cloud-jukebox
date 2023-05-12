@@ -1144,13 +1144,12 @@ begin
     DownloadSongs(DlSongs);
   end
   else begin
+    DlSongs.Free;
+    DlSongs := nil;
     if DebugPrint then begin
       writeLn('Not calling DownloadSongs b/c DlSongs is empty');
     end;
   end;
-
-  DlSongs.Free;
-  DlSongs := nil;
 end;
 
 //*******************************************************************************
@@ -1163,6 +1162,7 @@ begin
         writeLn('creating SongDownloaderThread');
       end;
       SongDownloaderThread := TSongDownloaderThread.Create(self, DlSongs);
+      SongDownloaderThread.Start;
     end
     else begin
       if DebugPrint then begin
@@ -1182,9 +1182,9 @@ end;
 
 procedure TJukebox.RunSongDownloaderThread;
 begin
-  if SongDownloaderThread <> nil then begin
-    SongDownloaderThread.Start;
-  end;
+  //if SongDownloaderThread <> nil then begin
+  //  SongDownloaderThread.Start;
+  //end;
 end;
 
 //*******************************************************************************

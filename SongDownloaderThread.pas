@@ -53,7 +53,9 @@ end;
 
 procedure TSongDownloaderThread.Execute;
 begin
+  writeLn('Starting SongDownloaderThread execution');
   SongDownloader.Run;
+  writeLn('Ending SongDownloaderThread execution');
 end;
 
 //*******************************************************************************
