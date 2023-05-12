@@ -1155,7 +1155,9 @@ end;
 
 procedure TJukebox.RunSongDownloaderThread;
 begin
-  SongDownloaderThread.Start;
+  if SongDownloaderThread <> nil then begin
+    SongDownloaderThread.Start;
+  end;
 end;
 
 //*******************************************************************************
