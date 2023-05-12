@@ -385,11 +385,13 @@ function JBListDirsInDirectory(DirPath: String): TStringList;
 var
   ListSubdirs: TStringList;
   Info: TSearchRec;
+  DirPathAndMask: String;
 begin
   ListSubdirs := TStringList.Create;
 
   if JBDirectoryExists(DirPath) then begin
-    if FindFirst('*', faAnyFile, Info) = 0 then begin
+    DirPathAndMask := JBPathJoin(DirPath, '*');
+    if FindFirst(DirPathAndMask, faAnyFile, Info) = 0 then begin
       Repeat
         With Info do begin
           // is it a directory?
