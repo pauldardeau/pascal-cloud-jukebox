@@ -345,6 +345,7 @@ function JBListFilesInDirectory(DirPath: String): TStringList;
 var
   ListFiles: TStringList;
   Info: TSearchRec;
+  DirPathAndMask: String;
   {
     Time: LongInt;
     Size: Int64;
@@ -355,14 +356,18 @@ var
     property TimeStamp: TDateTime; [r]
   }
 begin
+  writeLn('JBListFilesInDirectory searching ' + DirPath);
+
   ListFiles := TStringList.Create;
 
   if JBDirectoryExists(DirPath) then begin
-    if FindFirst('*', faAnyFile, Info) = 0 then begin
+    DirPathAndMask := JBPathJoin(DirPath, '*');
+    if FindFirst(DirPathAndMask, faAnyFile, Info) = 0 then begin
       Repeat
         With Info do begin
           // is it a file?
           if (Attr and faDirectory) = 0 then begin
+            writeLn('Found file: "' + Name + '"');
             ListFiles.Append(Name);
           end;
         end;
