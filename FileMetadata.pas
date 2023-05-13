@@ -24,6 +24,7 @@ type
 
   public
     constructor Create;
+    constructor Create(aFm: TFileMetadata);
     destructor Destroy; override;
     function IsEqualTo(aFm: TFileMetadata): Boolean;
   end;
@@ -49,6 +50,24 @@ begin
   Encrypted := false;
   ContainerName := '';
   ObjectName := '';
+end;
+
+//*******************************************************************************
+
+constructor TFileMetadata.Create(aFm: TFileMetadata);
+begin
+  inherited Create;
+  FileUid := aFm.FileUid;
+  FileName := aFm.FileName;
+  OriginFileSize := aFm.OriginFileSize;
+  StoredFileSize := aFm.StoredFileSize;
+  PadCharCount := aFm.PadCharCount;
+  FileTime := aFm.FileTime;
+  Md5Hash := aFm.Md5Hash;
+  Compressed := aFm.Compressed;
+  Encrypted := aFm.Encrypted;
+  ContainerName := aFm.ContainerName;
+  ObjectName := aFm.ObjectName;
 end;
 
 //*******************************************************************************

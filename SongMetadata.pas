@@ -19,6 +19,7 @@ type
   public
     constructor Create;
     constructor Create(aFm: TFileMetadata);
+    constructor Create(otherSm: TSongMetadata);
     destructor Destroy; override;
     function IsEqualTo(Song: TSongMetadata): Boolean;
   end;
@@ -47,6 +48,18 @@ begin
   ArtistName := '';
   AlbumUid := '';
   SongName := '';
+end;
+
+//*******************************************************************************
+
+constructor TSongMetadata.Create(otherSm: TSongMetadata);
+begin
+  inherited Create;
+  Fm := TFileMetadata.Create(otherSm.Fm);
+  ArtistUid := otherSm.ArtistUid;
+  ArtistName := otherSm.ArtistName;
+  AlbumUid := otherSm.AlbumUid;
+  SongName := otherSm.SongName;
 end;
 
 //*******************************************************************************
