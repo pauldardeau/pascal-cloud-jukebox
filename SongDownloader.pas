@@ -40,7 +40,6 @@ end;
 
 destructor TSongDownloader.Destroy;
 begin
-  writeLn('TSongDownloader.Destroy');
   if ListSongs <> nil then begin
     ListSongs.Free;
     ListSongs := nil;

@@ -48,7 +48,6 @@ end;
 
 destructor TSongDownloaderThread.Destroy;
 begin
-  writeLn('TSongDownloaderThread.Destroy');
   SongDownloader.Free;
   inherited;
 end;
