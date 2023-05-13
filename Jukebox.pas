@@ -1130,7 +1130,20 @@ begin
         si := SongList[CheckIndex];
         FilePath := SongPathInPlaylist(si);
         if not JBFileExists(FilePath) then begin
-          DlSongs.Add(si);
+
+          //NOTE: it's important that we not simply copy
+          // the SongMetadata instance into the list of
+          // songs to download because the DlSongs list
+          // will (by default) delete the objects when
+          // we delete the list. We need to do one of
+          // 2 things here: (a) configure DlSongs to
+          // NOT free the objects by setting its
+          // 'FreeObjects' property to false, or (b)
+          // clone (deep copy) the SongMetadata so
+          // that DlSongs has its own copy of the song
+          // metadata that it can delete.
+
+          DlSongs.Add(TSongMetadata.Create(si));
           if DlSongs.Count >= FileCacheCount then begin
             break;
           end;
@@ -1157,6 +1170,20 @@ end;
 procedure TJukebox.DownloadSongs(DlSongs: TListSongMetadata);
 begin
   if DlSongs.Count > 0 then begin
+    if SongDownloaderThread <> nil then begin
+      if DebugPrint then begin
+        writeLn('checking whether existing downloader thread has completed');
+      end;
+
+      if SongDownloaderThread.IsCompleted then begin
+        if DebugPrint then begin
+          writeLn('song downloader thread has completed, free it');
+        end;
+        SongDownloaderThread.Free;
+        SongDownloaderThread := nil;
+      end;
+    end;
+
     if SongDownloaderThread = nil then begin
       if DebugPrint then begin
         writeLn('creating SongDownloaderThread');
@@ -1166,8 +1193,7 @@ begin
     end
     else begin
       if DebugPrint then begin
-        writeLn('Not downloading more songs b/c Downloader <> nil or ' +
-                'DownloadThread <> nil');
+        writeLn('Not downloading more songs b/c SongDownloaderThread <> nil');
       end;
     end;
   end
