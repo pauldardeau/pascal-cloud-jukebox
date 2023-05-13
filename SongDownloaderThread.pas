@@ -17,6 +17,7 @@ type
   TSongDownloaderThread = Class(TThread)
   private
     SongDownloader: TSongDownloader;
+    Completed: Boolean;
 
   protected
     procedure Execute; override;
@@ -24,6 +25,7 @@ type
   public
     constructor Create(jb: TAbstractJukebox; aSongList: TListSongMetadata);
     destructor Destroy; override;
+    function IsCompleted: Boolean;
   end;
 
 //*******************************************************************************
@@ -37,6 +39,8 @@ constructor TSongDownloaderThread.Create(jb: TAbstractJukebox;
                                          aSongList: TListSongMetadata);
 begin
   inherited Create(true);
+  FreeOnTerminate := false;
+  Completed := false;
   SongDownloader := TSongDownloader.Create(jb, aSongList);
 end;
 
@@ -55,7 +59,15 @@ procedure TSongDownloaderThread.Execute;
 begin
   writeLn('Starting SongDownloaderThread execution');
   SongDownloader.Run;
+  Completed := true;
   writeLn('Ending SongDownloaderThread execution');
+end;
+
+//*******************************************************************************
+
+function TSongDownloaderThread.IsCompleted: Boolean;
+begin
+  IsCompleted := Completed;
 end;
 
 //*******************************************************************************

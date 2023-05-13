@@ -41,8 +41,10 @@ end;
 destructor TSongDownloader.Destroy;
 begin
   writeLn('TSongDownloader.Destroy');
-  ListSongs.Free;
-  ListSongs := nil;
+  if ListSongs <> nil then begin
+    ListSongs.Free;
+    ListSongs := nil;
+  end;
   inherited;
 end;
 
@@ -53,26 +55,24 @@ var
   i: Integer;
   Song: TSongMetadata;
 begin
-  writeLn('Executing SongDownloader.Run');
+  if ListSongs <> nil then begin
+    if ListSongs.Count > 0 then begin
+      jukebox.BatchDownloadStart;
 
-  if ListSongs.Count > 0 then begin
-    writeLn('Have songs to download');
-    jukebox.BatchDownloadStart;
-
-    for i := 0 to ListSongs.Count-1 do begin
-      if jukebox.IsExitRequested then begin
-        break;
-      end
-      else begin
-        Song := ListSongs[i];
-        jukebox.DownloadSong(Song);
+      for i := 0 to ListSongs.Count-1 do begin
+        if jukebox.IsExitRequested then begin
+          break;
+        end
+        else begin
+          Song := ListSongs[i];
+          if Song <> nil then begin
+            jukebox.DownloadSong(Song);
+          end;
+        end;
       end;
+
+      jukebox.BatchDownloadComplete;
     end;
-    jukebox.BatchDownloadComplete;
-    writeLn('background download completed');
-  end
-  else begin
-    writeLn('SongDownloader.Run: listSongs is empty');
   end;
 end;
 
