@@ -356,8 +356,6 @@ var
     property TimeStamp: TDateTime; [r]
   }
 begin
-  writeLn('JBListFilesInDirectory searching ' + DirPath);
-
   ListFiles := TStringList.Create;
 
   if JBDirectoryExists(DirPath) then begin
@@ -367,7 +365,6 @@ begin
         With Info do begin
           // is it a file?
           if (Attr and faDirectory) = 0 then begin
-            writeLn('Found file: "' + Name + '"');
             ListFiles.Append(Name);
           end;
         end;
