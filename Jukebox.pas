@@ -307,8 +307,6 @@ end;
 {$ifdef unix}
 procedure SigHandler(signum: cint); cdecl;
 begin
-  writeln('Received signal: ',signum);
-
   if TJukebox.GlobalJukebox <> nil then begin
     if signum = SIGUSR1 then begin
       TJukebox.GlobalJukebox.TogglePausePlay;
@@ -316,16 +314,9 @@ begin
     else if signum = SIGUSR2 then begin
       TJukebox.GlobalJukebox.AdvanceToNextSong;
     end
-    else if signum = 15 then begin
-      writeln('SIGTERM received');
-      TJukebox.GlobalJukebox.PrepareForTermination;
-    end
-    else if signum = SIGINT then begin
-      writeln('SIGINT received');
-      TJukebox.GlobalJukebox.PrepareForTermination;
-    end
-    else if signum = SIGQUIT then begin
-      writeln('SIGQUIT received');
+    else if (signum = SIGTERM) or
+            (signum = SIGINT) or
+            (signum = SIGQUIT) then begin
       TJukebox.GlobalJukebox.PrepareForTermination;
     end
     else if signum = SIGWINCH then begin
