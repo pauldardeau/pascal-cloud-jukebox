@@ -89,6 +89,7 @@ type
     SongDownloaderThread: TSongDownloaderThread;
     AudioIniFilePath: String;
     SettingsIniFilePath: String;
+    NumSuccessivePlayFailures: Integer;
 
   public
     class function InitializeStorageSystem(StorageSys: TStorageSystem;
@@ -261,6 +262,7 @@ begin
   SongDownloaderThread := nil;
   AudioIniFilePath := JBPathJoin(JbOptions.Directory, AUDIO_INI_FILE_NAME);
   SettingsIniFilePath := JBPathJoin(JbOptions.Directory, SETTINGS_INI_FILE_NAME);
+  NumSuccessivePlayFailures := 0;
 
   if JukeboxOptions.DebugMode then begin
     DebugPrint := true;
@@ -447,6 +449,7 @@ end;
 procedure TJukebox.TogglePausePlay;
 begin
   IsPaused := not IsPaused;
+  NumSuccessivePlayFailures := 0;
   if IsPaused then begin
     writeLn('paused');
     if AudioPlayerProcess <> nil then begin
@@ -456,6 +459,7 @@ begin
   end
   else begin
     writeLn('resuming play');
+    SongPlayIsResume := true;
   end;
 end;
 
@@ -466,6 +470,8 @@ begin
   writeLn('advancing to next song');
   if AudioPlayerProcess <> nil then begin
     AudioPlayerProcess.Terminate(1);
+    NumSuccessivePlayFailures := 0;
+    SongPlayIsResume := false;
   end;
 end;
 
@@ -1043,10 +1049,24 @@ begin
       AudioPlayerProcess.Free;
       AudioPlayerProcess := nil;
 
+      SongPlayIsResume := false;
+
       // if the audio player failed or is not present, just sleep
       // for the length of time that audio would be played
       if ExitCode <> 0 then begin
         JBSleepSeconds(SongPlayLengthSeconds);
+        inc(NumSuccessivePlayFailures);
+        if NumSuccessivePlayFailures >= 3 then begin
+          // we have had at least 3 successive play failures.
+          // obviously something is not right with config.
+          // just print a message and exit.
+          writeLn('error: audio player appears to be misconfigured.');
+          ExitRequested := true;
+        end;
+      end
+      else begin
+        // exit code was 0 (success)
+        NumSuccessivePlayFailures := 0;
       end;
     end
     else begin
@@ -1505,8 +1525,15 @@ begin
           end;
           if not IsPaused then begin
             inc(SongIndex);
+            SongPlayIsResume := false;
+            SongSecondsOffset := 0;
             if SongIndex >= NumberSongs then begin
-              SongIndex := 0;
+              if IsRepeatMode then begin
+                SongIndex := 0;
+              end
+              else begin
+                ExitRequested := true;
+              end;
             end;
           end
           else begin
