@@ -1665,7 +1665,6 @@ end;
 
 procedure TJukebox.ImportPlaylists;
 var
-  FileRead: Boolean;
   FileContents: TMemoryStream;
   FileImportCount: Integer;
   HaveContainer: Boolean;
@@ -1705,8 +1704,7 @@ begin
         FullPath := JBPathJoin(PlaylistImportDirPath, FileName);
         ObjectName := FileName;
         FileContents := nil;
-        FileRead := ReadFileContents(FullPath, FileContents);
-        if FileRead then begin
+        if ReadFileContents(FullPath, FileContents) then begin
           if StorageSystem.PutObject(PlaylistContainer,
                                      ObjectName,
                                      FileContents,
@@ -1983,21 +1981,17 @@ end;
 
 procedure TJukebox.PlayPlaylist(Playlist: String);
 var
-  PlaylistSongsFound: Boolean;
   TheListSongs: TListSongMetadata;
 begin
   //ScopePlaylist = Playlist;
-  PlaylistSongsFound := false;
   TheListSongs := TListSongMetadata.Create;
   if GetPlaylistSongs(Playlist, TheListSongs) then begin
     if TheListSongs.Count > 0 then begin
-      PlaylistSongsFound := true;
       PlaySongList(TheListSongs, false);
     end
-  end;
-
-  if not PlaylistSongsFound then begin
-    writeLn('error: unable to retrieve playlist songs');
+    else begin
+      writeLn('error: unable to retrieve playlist songs');
+    end;
   end;
 end;
 
@@ -2140,7 +2134,6 @@ end;
 function TJukebox.DeletePlaylist(PlaylistName: String): Boolean;
 var
   IsDeleted: Boolean;
-  Container: String;
   ObjectName: String;
 begin
   IsDeleted := false;
@@ -2151,10 +2144,9 @@ begin
     end
   end;
 
-  Container := PlaylistContainer;
   ObjectName := PlaylistName + JSON_FILE_EXT;
 
-  if StorageSystem.DeleteObject(Container, ObjectName) then begin
+  if StorageSystem.DeleteObject(PlaylistContainer, ObjectName) then begin
     IsDeleted := true;
   end;
 
@@ -2165,7 +2157,6 @@ end;
 
 procedure TJukebox.ImportAlbumArt;
 var
-  FileRead: Boolean;
   FileContents: TMemoryStream;
   FileImportCount: Integer;
   HaveContainer: Boolean;
@@ -2204,8 +2195,7 @@ begin
         FullPath := JBPathJoin(AlbumArtImportDirPath, FileName);
         ObjectName := FileName;
         FileContents := nil;
-        FileRead := ReadFileContents(FullPath, FileContents);
-        if FileRead then begin
+        if ReadFileContents(FullPath, FileContents) then begin
           if StorageSystem.PutObject(AlbumArtContainer,
                                      ObjectName,
                                      FileContents,
