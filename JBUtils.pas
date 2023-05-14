@@ -31,9 +31,8 @@ var
 begin
   Flags := [rfReplaceAll];
 
-  // #39 is single quote character
-  if StrUtils.ContainsStr(S, '#39') then begin
-    S := StrUtils.StringReplace(S, '#39', '', Flags);
+  if StrUtils.ContainsStr(S, '''') then begin
+    S := StrUtils.StringReplace(S, '''', '', Flags);
   end;
 
   if StrUtils.ContainsStr(S, '!') then begin

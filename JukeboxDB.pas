@@ -8,7 +8,7 @@ uses
   CRT, Classes, fgl, FileMetadata, JBUtils, SongMetadata, SysUtils, SQLDB, SQLite3Conn;
 
 const
-  STRING_OF_SINGLE_QUOTE = '#39';  // #39 is single quote character
+  STRING_OF_SINGLE_QUOTE = '''';  // string containing single quote character
 
 type
   TListSongMetadata = specialize TFPGObjectList<TSongMetadata>;
