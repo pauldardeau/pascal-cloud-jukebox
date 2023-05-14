@@ -6,6 +6,7 @@ interface
 
 uses
 {$ifdef unix}
+  baseunix,
   cthreads,
   cmem,
 {$endif}
@@ -51,6 +52,8 @@ type
   TListSongMetadata = specialize TFPGObjectList<TSongMetadata>;
 
   TJukebox = Class(TAbstractJukebox)
+  public
+    var GlobalJukebox: TJukebox; static;
   private
     JukeboxOptions: TJukeboxOptions;
     StorageSystem: TStorageSystem;
@@ -214,14 +217,14 @@ constructor TJukebox.Create(JbOptions: TJukeboxOptions;
                             aDebugPrint: Boolean);
 begin
   inherited Create;
-  //{$IFNDEF WINDOWS}
-  //if GlobalJukebox = nil then begin
-  //  GlobalJukebox := self;
-  //end
-  //else begin
+  {$ifdef unix}
+  if GlobalJukebox = nil then begin
+    GlobalJukebox := self;
+  end
+  else begin
   //  //TODO: throw an exception (only 1 Jukebox instance allowed)
-  //end;
-  //{$ENDIF}
+  end;
+  {$endif}
 
   JukeboxOptions := JbOptions;
   StorageSystem := StorageSys;
@@ -301,31 +304,48 @@ end;
 
 //*******************************************************************************
 
-//class function SigHandler(signum: Integer);
-//begin
-//  {$IFNDEF WINDOWS}
-//  if Jukebox.GlobalJukebox <> nil then begin
-//    if signum = SIGUSR1 then begin
-//      Jukebox.GlobalJukebox.TogglePausePlay;
-//    end
-//    else if signum = SIGUSR2 then begin
-//      Jukebox.GlobalJukebox.AdvanceToNextSong;
-//    end
-//    else if signum = SIGINT then begin
-//      Jukebox.GlobalJukebox.PrepareForTermination;
-//    end
-//    else if signum = SIGWINCH then begin
-//      Jukebox.GlobalJukebox.DisplayInfo;
-//    end;
-//  end;
-//  {$ENDIF}
-//end;
+{$ifdef unix}
+procedure SigHandler(signum: cint); cdecl;
+begin
+  writeln('Received signal: ',signum);
+
+  if TJukebox.GlobalJukebox <> nil then begin
+    if signum = SIGUSR1 then begin
+      TJukebox.GlobalJukebox.TogglePausePlay;
+    end
+    else if signum = SIGUSR2 then begin
+      TJukebox.GlobalJukebox.AdvanceToNextSong;
+    end
+    else if signum = 15 then begin
+      writeln('SIGTERM received');
+      TJukebox.GlobalJukebox.PrepareForTermination;
+    end
+    else if signum = SIGINT then begin
+      writeln('SIGINT received');
+      TJukebox.GlobalJukebox.PrepareForTermination;
+    end
+    else if signum = SIGQUIT then begin
+      writeln('SIGQUIT received');
+      TJukebox.GlobalJukebox.PrepareForTermination;
+    end
+    else if signum = SIGWINCH then begin
+      TJukebox.GlobalJukebox.DisplayInfo;
+    end;
+  end;
+end;
+{$endif}
 
 //*******************************************************************************
 
 procedure TJukebox.InstallSignalHandlers;
 begin
-  //TODO: implement InstallSignalHandlers
+{$ifdef unix}
+  fpSignal(SigQuit, SignalHandler(@SigHandler));
+  fpSignal(SigInt, SignalHandler(@SigHandler));
+  fpSignal(SigTerm, SignalHandler(@SigHandler));
+  fpSignal(SigUsr1, SignalHandler(@SigHandler));
+  fpSignal(SigUsr2, SignalHandler(@SigHandler));
+{$endif}
 end;
 
 //*******************************************************************************
@@ -438,12 +458,10 @@ begin
   IsPaused := not IsPaused;
   if IsPaused then begin
     writeLn('paused');
-    //if AudioPlayerProcess <> nil then begin
-    //  // capture current song position (seconds into song)
-    //  AudioPlayerProcess.Stop;
-    //  AudioPlayerProcess.Free;
-    //  AudioPlayerProcess := nil;
-    //end;
+    if AudioPlayerProcess <> nil then begin
+      // capture current song position (seconds into song)
+      AudioPlayerProcess.Terminate(1);
+    end;
   end
   else begin
     writeLn('resuming play');
@@ -455,27 +473,24 @@ end;
 procedure TJukebox.AdvanceToNextSong;
 begin
   writeLn('advancing to next song');
-  //if AudioPlayerProcess <> nil then begin
-  //  AudioPlayerProcess.Stop;
-  //  AudioPlayerProcess := nil;
-  //end;
+  if AudioPlayerProcess <> nil then begin
+    AudioPlayerProcess.Terminate(1);
+  end;
 end;
 
 //*******************************************************************************
 
 procedure TJukebox.PrepareForTermination;
 begin
-  writeLn('Ctrl-C detected, shutting down');
+  writeLn('shutting down');
 
   // indicate that it's time to shutdown
   ExitRequested := true;
 
   // terminate audio player if it's running
-  //if AudioPlayerProcess <> nil then begin
-  //  AudioPlayerProcess.Stop;
-  //  AudioPlayerProcess.Free;
-  //  AudioPlayerProcess := nil;
-  //end;
+  if AudioPlayerProcess <> nil then begin
+    AudioPlayerProcess.Terminate(1);
+  end;
 end;
 
 //*******************************************************************************
