@@ -159,7 +159,9 @@ implementation
 
 //*******************************************************************************
 
-class function TJukebox.InitializeStorageSystem(StorageSys: TStorageSystem; aContainerPrefix: String; aDebugPrint: Boolean): Boolean;
+class function TJukebox.InitializeStorageSystem(StorageSys: TStorageSystem;
+                                                aContainerPrefix: String;
+                                                aDebugPrint: Boolean): Boolean;
 var
   ArtistSongChars: String;
   i: Integer;
@@ -189,8 +191,7 @@ begin
   ContainerNames.Add(SFX_PLAYLIST_CONTAINER);
 
   for i := 0 to ContainerNames.Count-1 do begin
-    ContainerName := ContainerNames[i];
-    CnrName := aContainerPrefix + ContainerName;
+    CnrName := aContainerPrefix + ContainerNames[i];
     if not StorageSys.CreateContainer(CnrName) then begin
       writeLn('error: unable to create container ' + CnrName);
       InitializeStorageSystem := false;
@@ -721,14 +722,16 @@ begin
                   // endUploadTime - startUploadTime
                   //uploadElapsedTime := endUploadTime.Add(-startUploadTime)
                   //cumulativeUploadTime.Add(uploadElapsedTime)
-                  CumulativeUploadBytes := CumulativeUploadBytes + FileContents.Size;
+                  CumulativeUploadBytes := CumulativeUploadBytes +
+                                           FileContents.Size;
 
                   // store song metadata in local database
                   if not StoreSongMetadata(fsSong) then begin
-                    // we stored the song to the storage system, but were unable to store
-                    // the metadata in the local database. we need to delete the song
-                    // from the storage system since we won't have any way to access it
-                    // since we can't store the song metadata locally.
+                    // we stored the song to the storage system, but were unable
+                    // to store the metadata in the local database. we need to
+                    // delete the song from the storage system since we will not
+                    // have any way to access it since we cannot store the song
+                    // metadata locally.
                     writeLn('unable to store metadata, deleting obj "' +
                             fsSong.Fm.ObjectName + '"');
                     StorageSystem.DeleteObject(ContainerName,
@@ -1011,7 +1014,8 @@ begin
             theSongStartTime := SongSecondsOffset.ToString;
           end;
           //writeLn('resuming at ' + songStartTime);
-          commandArgs := commandArgs.Replace(PH_START_SONG_TIME_OFFSET, theSongStartTime);
+          commandArgs := commandArgs.Replace(PH_START_SONG_TIME_OFFSET,
+                                             theSongStartTime);
           commandArgs := commandArgs.Replace(PH_AUDIO_FILE_PATH, SongFilePath);
           didResume := true;
           //writeLn('commandArgs: ' + commandArgs);
@@ -1134,7 +1138,7 @@ begin
         FilePath := SongPathInPlaylist(si);
         if not JBFileExists(FilePath) then begin
 
-          //NOTE: it's important that we not simply copy
+          //NOTE: it is important that we not simply copy
           // the SongMetadata instance into the list of
           // songs to download because the DlSongs list
           // will (by default) delete the objects when
