@@ -353,7 +353,6 @@ function TJukebox.Enter: Boolean;
 var
   EnterSuccess: Boolean;
   MetadataFileInContainer: Boolean;
-  Container: String;
   ContainerContents: TStringList;
   MetadataDbFilePath: String;
   i: Integer;
@@ -372,8 +371,7 @@ begin
 
     if ContainerContents.Count > 0 then begin
       for i := 0 to ContainerContents.Count-1 do begin
-        Container := ContainerContents[i];
-        if Container = MetadataDbFile then begin
+        if ContainerContents[i] = MetadataDbFile then begin
           MetadataFileInContainer := true;
           break;
         end;
@@ -799,8 +797,8 @@ begin
 
     if CumulativeUploadTime > 0 then begin
       cumulativeUploadKb := Double(CumulativeUploadBytes) / 1000.0;
-      {writeLn('average upload throughput = ' {0} KB/sec,
-              cumulativeUploadKb/CumulativeUploadTime); }
+      {writeLn('average upload throughput = ' +
+      cumulativeUploadKb/CumulativeUploadTime + ' KB/sec); }
     end;
   end;
 end;
@@ -1072,7 +1070,6 @@ var
   DirListing: TStringList;
   SongFileCount: Integer;
   DlSongs: TListSongMetadata;
-  FileName: String;
   i: Integer;
   j: Integer;
   FileExtension: String;
@@ -1103,8 +1100,7 @@ begin
 
   SongFileCount := 0;
   for i := 0 to DirListing.Count-1 do begin
-    FileName := DirListing[i];
-    FileExtension := JBGetFileExtension(FileName);
+    FileExtension := JBGetFileExtension(DirListing[i]);
 
     if (FileExtension.Length > 0) and
        (FileExtension <> DOWNLOAD_EXTENSION) then begin
@@ -1227,7 +1223,6 @@ var
   HaveSongs: Boolean;
   aSongList: TListSongMetadata;
   ListTrackObjects: TStringList;
-  TrackObjectName: String;
   i: Integer;
   Song: TSongMetadata;
 begin
@@ -1239,8 +1234,7 @@ begin
       if GetAlbumTrackObjectList(Artist, Album, ListTrackObjects) then begin
         if ListTrackObjects.Count > 0 then begin
           for i := 0 to ListTrackObjects.Count-1 do begin
-            TrackObjectName := ListTrackObjects[i];
-            Song := JukeboxDb.RetrieveSong(TrackObjectName);
+            Song := JukeboxDb.RetrieveSong(ListTrackObjects[i]);
             if Song <> nil then begin
               aSongList.Add(Song);
             end;
@@ -1430,7 +1424,6 @@ var
   pidAsText: String;
   pidFilePath: String;
   i: Integer;
-  Value: TSongMetadata;
 begin
   if SongList <> nil then begin
     SongList.Free;
@@ -1838,7 +1831,6 @@ var
   Success: Boolean;
   JsonFileName: String;
   LocalJsonFile: String;
-  PlaylistJsonContents: String;
   FileExtensions: TStringList;
   SongsAdded: Integer;
   SongFound: Boolean;
@@ -1940,7 +1932,6 @@ procedure TJukebox.ShowAlbum(Artist: String; Album: String);
 var
   ListTrackObjects: TStringList;
   SongName: String;
-  SongObject: String;
   i: Integer;
   j: Integer;
 begin
@@ -1949,8 +1940,7 @@ begin
     writeLn('Album: ' + Album + ' (' + Artist + ')');
     i := 1;
     for j := 0 to ListTrackObjects.Count-1 do begin
-      SongObject := ListTrackObjects[j];
-      SongName := SongFromFileName(SongObject);
+      SongName := SongFromFileName(ListTrackObjects[j]);
       writeLn(IntToStr(i) + '  ' + SongName);
       inc(i);
     end;
