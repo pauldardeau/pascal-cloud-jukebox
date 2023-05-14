@@ -222,7 +222,8 @@ begin
     GlobalJukebox := self;
   end
   else begin
-  //  //TODO: throw an exception (only 1 Jukebox instance allowed)
+    writeLn('error: only 1 occurrence of Jukebox may be created. halting.');
+    Halt(1);
   end;
   {$endif}
 
