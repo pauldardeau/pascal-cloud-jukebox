@@ -1853,7 +1853,6 @@ var
   EncodedSong: String;
   i: Integer;
   j: Integer;
-  FileExtension: String;
   SongUid: String;
   Song: TSongMetadata;
 begin
@@ -1894,10 +1893,8 @@ begin
             SongFound := false;
 
             for j := 0 to FileExtensions.Count-1 do begin
-              FileExtension := FileExtensions[j];
-              SongUid := EncodedSong + FileExtension;
+              SongUid := EncodedSong + FileExtensions[j];
               Song := JukeboxDB.RetrieveSong(SongUid);
-
               if Song <> nil then begin
                 ListSongs.Add(Song);
                 inc(SongsAdded);
@@ -1909,6 +1906,10 @@ begin
             if not SongFound then begin
               writeLn('error: unable to retrieve metadata for ' + EncodedSong);
             end;
+          end;
+
+	  if SongsAdded > 0 then begin
+            Success := true;
           end;
         except
           on e: exception do writeLn('exception: ' + e.message);
