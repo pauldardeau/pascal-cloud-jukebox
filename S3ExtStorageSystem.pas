@@ -190,13 +190,13 @@ begin
           PosLastSpace := ContainerEntry.LastIndexOf(' ');
           if PosLastSpace > 0 then begin
             ContainerName := ContainerEntry.Substring(PosLastSpace+1).Trim;
-			if ContainerName.Length > 0 then begin
+            if ContainerName.Length > 0 then begin
               ContainerList.Add(ContainerName);
             end;
           end;
         end;
-		ListOfContainers.Free;
-		ListOfContainers := ContainerList;
+        ListOfContainers.Free;
+        ListOfContainers := ContainerList;
 {$ENDIF}
       end;
     end
@@ -342,21 +342,21 @@ begin
         ListObjects.Clear;
         writeLn('error: unable to run program');
       end
-	  else begin
+      else begin
 {$IFDEF windows}
-	    ObjectList := TStringList.Create;
-		for i := 0 to ListObjects.Count-1 do begin
-		  ObjectListing := ListObjects[i].Trim;
-		  PosLastSpace := ObjectListing.LastIndexOf(' ');
-		  if PosLastSpace > 0 then begin
-		    ObjectName := ObjectListing.Substring(PosLastSpace+1).Trim;
-			ObjectList.Add(ObjectName);
-		  end;
-		end;
-		ListObjects.Free;
-		ListObjects := ObjectList;
+        ObjectList := TStringList.Create;
+        for i := 0 to ListObjects.Count-1 do begin
+          ObjectListing := ListObjects[i].Trim;
+          PosLastSpace := ObjectListing.LastIndexOf(' ');
+          if PosLastSpace > 0 then begin
+            ObjectName := ObjectListing.Substring(PosLastSpace+1).Trim;
+            ObjectList.Add(ObjectName);
+          end;
+        end;
+        ListObjects.Free;
+        ListObjects := ObjectList;
 {$ENDIF}
-	  end;
+      end;
     end
     else begin
       writeLn('error: unable to prepare run script');
@@ -747,16 +747,16 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-    
-	ProgramArgs.Add(ProgramPath);
+
+    ProgramArgs.Add(ProgramPath);
 
     FileLines.Free;
     FileLines := nil;
   end
   else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
     ExecutablePath := DEFAULT_WINDOWS_SHELL;
-	ProgramArgs.Add('/c');
-	ProgramArgs.Add(ProgramPath);
+    ProgramArgs.Add('/c');
+    ProgramArgs.Add(ProgramPath);
   end;
 
   ExitCode := 0;
@@ -849,16 +849,16 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-	
-	ProgramArgs.Add(ProgramPath);
-	
+
+    ProgramArgs.Add(ProgramPath);
+
     FileLines.Free;
     FileLines := nil;
   end
   else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
     ExecutablePath := DEFAULT_WINDOWS_SHELL;
-	ProgramArgs.Add('/c');
-	ProgramArgs.Add(ProgramPath);
+    ProgramArgs.Add('/c');
+    ProgramArgs.Add(ProgramPath);
   end;
 
   ExitCode := 0;
@@ -927,16 +927,16 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-	
-	ProgramArgs.Add(ProgramPath);
-	
+
+    ProgramArgs.Add(ProgramPath);
+
     FileLines.Free;
     FileLines := nil;
   end
   else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
     ExecutablePath := DEFAULT_WINDOWS_SHELL;
-	ProgramArgs.Add('/c');
-	ProgramArgs.Add(ProgramPath);
+    ProgramArgs.Add('/c');
+    ProgramArgs.Add(ProgramPath);
   end;
 
   ExitCode := 0;
