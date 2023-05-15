@@ -123,7 +123,6 @@ type
     procedure PlaySong(Song: TSongMetadata);
     procedure DownloadSongs;
     procedure DownloadSongs(DlSongs: TListSongMetadata);
-    procedure RunSongDownloaderThread;
     procedure PlaySongs(Shuffle: Boolean; Artist: String; Album: String);
     procedure PlaySongList(aSongList: TListSongMetadata; Shuffle: Boolean);
     procedure ShowListContainers;
@@ -1229,15 +1228,6 @@ begin
       writeLn('Not downloading more songs b/c we were given an empty list');
     end;
   end;
-end;
-
-//*******************************************************************************
-
-procedure TJukebox.RunSongDownloaderThread;
-begin
-  //if SongDownloaderThread <> nil then begin
-  //  SongDownloaderThread.Start;
-  //end;
 end;
 
 //*******************************************************************************
