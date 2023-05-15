@@ -855,12 +855,15 @@ begin
   end;
 
   KvpKeys := Kvp.GetKeys;
-  for i := 0 to KvpKeys.Count-1 do begin
-    KvpKey := KvpKeys[i];
-    FileText := FileText.Replace(KvpKey, Kvp.GetValue(KvpKey));
+
+  if KvpKeys <> nil then begin
+    for i := 0 to KvpKeys.Count-1 do begin
+      KvpKey := KvpKeys[i];
+      FileText := FileText.Replace(KvpKey, Kvp.GetValue(KvpKey));
+    end;
+    KvpKeys.Free;
+    KvpKeys := nil;
   end;
-  KvpKeys.Free;
-  KvpKeys := nil;
 
   // this next line can be helpful to quickly see how the
   // scripts are being populated
