@@ -303,16 +303,29 @@ var
   StdErrFilePath: String;
 {$ENDIF}
 begin
-  StringList := nil;
   ExitCode := -1;
   StdOut := '';
   StdErr := '';
+  
+  writeLn('ProgramPath: "' + ProgramPath + '"');
+  for i := 0 to ProgramArgs.Count-1 do begin
+    writeLn('Arg: ' + IntToStr(i+1) + ' "' + ProgramArgs[i] + '"');
+  end;
 
 {$IFDEF windows}
-  StdOutFilePath := JBPathJoin(WorkingDir, 'stdout.txt');
+  if WorkingDir.Length > 0 then begin
+    StdOutFilePath := JBPathJoin(WorkingDir, 'stdout.txt');
+	StdErrFilePath := JBPathJoin(WorkingDir, 'stderr.txt');
+  end
+  else begin
+    StdOutFilePath := 'stdout.txt';
+	StdErrFilePath := 'stderr.txt';
+  end;
+  
   JBDeleteFileIfExists(StdOutFilePath);
-  StdErrFilePath := JBPathJoin(WorkingDir, 'stderr.txt');
   JBDeleteFileIfExists(StdErrFilePath);
+{$ELSE}
+  StringList := nil;
 {$ENDIF}
 
   try
@@ -355,9 +368,10 @@ begin
     if JBGetFileSize(StdOutFilePath) > 0 then begin
       StdOut := JBFileReadAllText(StdOutFilePath);
     end;
+	
     if JBGetFileSize(StdErrFilePath) > 0 then begin
       StdErr := JBFileReadAllText(StdErrFilePath);
-    end;
+	end;
 {$ENDIF}
   finally
     Process.Free;

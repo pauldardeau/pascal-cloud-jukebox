@@ -20,6 +20,7 @@ const
 
   // system shells
   DEFAULT_POSIX_SHELL = '/bin/sh';
+  DEFAULT_WINDOWS_SHELL = 'c:\windows\system32\cmd.exe';
 
   // file prefixes
   PREFIX_RUN_SCRIPT_NAME = 'exec-';
@@ -159,6 +160,13 @@ var
   Kvp: TKeyValuePairs;
   ScriptTemplate: String;
   RunScript: String;
+{$IFDEF windows}
+  ContainerList: TStringList;
+  ContainerEntry: String;
+  i: Integer;
+  PosLastSpace: Integer;
+  ContainerName: String;
+{$ENDIF}
 begin
   ListOfContainers := TStringList.Create;
   Kvp := TKeyValuePairs.Create;
@@ -173,6 +181,23 @@ begin
       if not RunProgram(RunScript, ListOfContainers) then begin
         ListOfContainers.Clear;
         writeLn('error: unable to run script');
+      end
+      else begin
+{$IFDEF windows}
+        ContainerList := TStringList.Create;
+        for i := 0 to ListOfContainers.Count-1 do begin
+          ContainerEntry := ListOfContainers[i].Trim;
+          PosLastSpace := ContainerEntry.LastIndexOf(' ');
+          if PosLastSpace > 0 then begin
+            ContainerName := ContainerEntry.Substring(PosLastSpace+1).Trim;
+			if ContainerName.Length > 0 then begin
+              ContainerList.Add(ContainerName);
+            end;
+          end;
+        end;
+		ListOfContainers.Free;
+		ListOfContainers := ContainerList;
+{$ENDIF}
       end;
     end
     else begin
@@ -289,6 +314,13 @@ var
   Kvp: TKeyValuePairs;
   ScriptTemplate: String;
   RunScript: String;
+{$IFDEF windows}
+  ObjectList: TStringList;
+  ObjectListing: String;
+  i: Integer;
+  PosLastSpace: Integer;
+  ObjectName: String;
+{$ENDIF}
 begin
   if DebugMode then begin
     writeLn('entering ListContainerContents with ContainerName=' + ContainerName);
@@ -309,7 +341,22 @@ begin
       if not RunProgram(RunScript, ListObjects) then begin
         ListObjects.Clear;
         writeLn('error: unable to run program');
-      end;
+      end
+	  else begin
+{$IFDEF windows}
+	    ObjectList := TStringList.Create;
+		for i := 0 to ListObjects.Count-1 do begin
+		  ObjectListing := ListObjects[i].Trim;
+		  PosLastSpace := ObjectListing.LastIndexOf(' ');
+		  if PosLastSpace > 0 then begin
+		    ObjectName := ObjectListing.Substring(PosLastSpace+1).Trim;
+			ObjectList.Add(ObjectName);
+		  end;
+		end;
+		ListObjects.Free;
+		ListObjects := ObjectList;
+{$ENDIF}
+	  end;
     end
     else begin
       writeLn('error: unable to prepare run script');
@@ -651,7 +698,6 @@ var
   StdOut: String;
   StdErr: String;
   Success: Boolean;
-  IsShellScript: Boolean;
   ExecutablePath: String;
   FirstLine: String;
   ProgramArgs: TStringList;
@@ -679,8 +725,9 @@ begin
     exit;
   end;
 
-  IsShellScript := false;
   ExecutablePath := ProgramPath;
+
+  ProgramArgs := TStringList.Create;
 
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
@@ -700,21 +747,23 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
+    
+	ProgramArgs.Add(ProgramPath);
+
     FileLines.Free;
     FileLines := nil;
-    IsShellScript := true;
+  end
+  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
+    ExecutablePath := DEFAULT_WINDOWS_SHELL;
+	ProgramArgs.Add('/c');
+	ProgramArgs.Add(ProgramPath);
   end;
 
-  ProgramArgs := TStringList.Create;
   ExitCode := 0;
-
-  if IsShellScript then begin
-    ProgramArgs.Add(ProgramPath);
-  end;
 
   ProgramSuccess := JBExecuteProgram(ExecutablePath,
                                      ProgramArgs,
-                                     ScriptDirectory,
+                                     '',
                                      ExitCode,
                                      StdOut,
                                      StdErr);
@@ -757,7 +806,6 @@ function TS3ExtStorageSystem.RunProgram(ProgramPath: String;
 var
   StdErr: String;
   Success: Boolean;
-  IsShellScript: Boolean;
   ExecutablePath: String;
   FileLines: TStringList;
   FirstLine: String;
@@ -780,8 +828,8 @@ begin
     exit;
   end;
 
-  IsShellScript := false;
   ExecutablePath := ProgramPath;
+  ProgramArgs := TStringList.Create;
 
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
@@ -801,17 +849,19 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
+	
+	ProgramArgs.Add(ProgramPath);
+	
     FileLines.Free;
     FileLines := nil;
-    IsShellScript := true;
+  end
+  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
+    ExecutablePath := DEFAULT_WINDOWS_SHELL;
+	ProgramArgs.Add('/c');
+	ProgramArgs.Add(ProgramPath);
   end;
 
-  ProgramArgs := TStringList.Create;
   ExitCode := 0;
-
-  if IsShellScript then begin
-    ProgramArgs.Add(ProgramPath);
-  end;
 
   if JBExecuteProgram(ExecutablePath,
                       ProgramArgs,
@@ -836,7 +886,6 @@ var
   StdOut: String;
   StdErr: String;
   Success: Boolean;
-  IsShellScript: Boolean;
   ExecutablePath: String;
   FirstLine: String;
   ProgramArgs: TStringList;
@@ -857,8 +906,8 @@ begin
     exit;
   end;
 
-  IsShellScript := false;
   ExecutablePath := ProgramPath;
+  ProgramArgs := TStringList.Create;
 
   if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
     FileLines := JBFileReadTextLines(ProgramPath);
@@ -878,17 +927,19 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
+	
+	ProgramArgs.Add(ProgramPath);
+	
     FileLines.Free;
     FileLines := nil;
-    IsShellScript := true;
+  end
+  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
+    ExecutablePath := DEFAULT_WINDOWS_SHELL;
+	ProgramArgs.Add('/c');
+	ProgramArgs.Add(ProgramPath);
   end;
 
-  ProgramArgs := TStringList.Create;
   ExitCode := 0;
-
-  if IsShellScript then begin
-    ProgramArgs.Add(ProgramPath);
-  end;
 
   if JBExecuteProgram(ExecutablePath,
                       ProgramArgs,
@@ -973,11 +1024,11 @@ end;
 
 function TS3ExtStorageSystem.GetScriptSuffix: String;
 begin
-  {$IFDEF WINDOWS}
+{$IFDEF WINDOWS}
   GetScriptSuffix := SFX_BATCH_FILE;
-  {$ELSE}
+{$ELSE}
   GetScriptSuffix := SFX_SHELL_SCRIPT;
-  {$ENDIF}
+{$ENDIF}
 end;
 
 //*****************************************************************************
