@@ -93,7 +93,8 @@ type
     procedure PopulateBucket(Kvp: TKeyValuePairs; BucketName: String);
     procedure PopulateObject(Kvp: TKeyValuePairs; ObjectName: String);
     function RunProgram(ProgramPath: String;
-                        ListOutputLines: TStringList): Boolean;
+                        ListOutputLines: TStringList;
+                        out StdOut: String): Boolean;
     function RunProgram(ProgramPath: String): Boolean;
     function RunProgram(ProgramPath: String; out StdOut: String): Boolean;
     function PrepareRunScript(ScriptTemplate: String;
@@ -160,6 +161,7 @@ var
   Kvp: TKeyValuePairs;
   ScriptTemplate: String;
   RunScript: String;
+  StdOut: String;
 {$IFDEF windows}
   ContainerList: TStringList;
   ContainerEntry: String;
@@ -178,7 +180,7 @@ begin
 
   try
     if PrepareRunScript(ScriptTemplate, RunScript, Kvp) then begin
-      if not RunProgram(RunScript, ListOfContainers) then begin
+      if not RunProgram(RunScript, ListOfContainers, StdOut) then begin
         ListOfContainers.Clear;
         writeLn('error: unable to run script');
       end
@@ -314,6 +316,7 @@ var
   Kvp: TKeyValuePairs;
   ScriptTemplate: String;
   RunScript: String;
+  StdOut: String;
 {$IFDEF windows}
   ObjectList: TStringList;
   ObjectListing: String;
@@ -338,7 +341,7 @@ begin
 
   try
     if PrepareRunScript(ScriptTemplate, RunScript, Kvp) then begin
-      if not RunProgram(RunScript, ListObjects) then begin
+      if not RunProgram(RunScript, ListObjects, StdOut) then begin
         ListObjects.Clear;
         writeLn('error: unable to run program');
       end
@@ -693,9 +696,9 @@ end;
 //*****************************************************************************
 
 function TS3ExtStorageSystem.RunProgram(ProgramPath: String;
-                                        ListOutputLines: TStringList): Boolean;
+                                        ListOutputLines: TStringList;
+                                        out StdOut: String): Boolean;
 var
-  StdOut: String;
   StdErr: String;
   Success: Boolean;
   ExecutablePath: String;
@@ -770,12 +773,14 @@ begin
 
   if ProgramSuccess then begin
     if ExitCode = 0 then begin
-      if StdOut.Length > 0 then begin
-        OutputLines := StdOut.Split(LineEnding);
-        for i := 0 to Length(OutputLines)-1 do begin
-          OutputLine := OutputLines[i];
-          if OutputLine.Length > 0 then begin
-            ListOutputLines.Add(OutputLine);
+      if ListOutputLines <> nil then begin
+        if StdOut.Length > 0 then begin
+          OutputLines := StdOut.Split(LineEnding);
+          for i := 0 to Length(OutputLines)-1 do begin
+            OutputLine := OutputLines[i];
+            if OutputLine.Length > 0 then begin
+              ListOutputLines.Add(OutputLine);
+            end;
           end;
         end;
       end;
@@ -802,86 +807,8 @@ end;
 
 function TS3ExtStorageSystem.RunProgram(ProgramPath: String;
                                         out StdOut: String): Boolean;
-var
-  StdErr: String;
-  Success: Boolean;
-  ExecutablePath: String;
-  FileLines: TStringList;
-  FirstLine: String;
-  LineLength: Integer;
-  ProgramArgs: TStringList;
-  ExitCode: Integer;
 begin
-  FileLines := nil;
-  ProgramArgs := nil;
-
-  StdOut := '';
-  StdErr := '';
-  Success := false;
-
-  if not JBFileExists(ProgramPath) then begin
-    writeLn('RunProgram: error ' +
-            ProgramPath +
-            ' does not exist');
-    RunProgram := false;
-    exit;
-  end;
-
-  ExecutablePath := ProgramPath;
-  ProgramArgs := TStringList.Create;
-
-  if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
-    FileLines := JBFileReadTextLines(ProgramPath);
-    if FileLines.Count = 0 then begin
-      FileLines.Free;
-      FileLines := nil;
-      writeLn('RunProgram: unable to read file ' +
-              ProgramPath);
-      RunProgram := false;
-      exit;
-    end;
-    FirstLine := FileLines[0];
-    if FirstLine.StartsWith('#!') then begin
-      LineLength := FirstLine.Length;
-      ExecutablePath := FirstLine.Substring(2, LineLength-2);
-    end
-    else begin
-      ExecutablePath := DEFAULT_POSIX_SHELL;
-    end;
-
-    ProgramArgs.Add(ProgramPath);
-
-    FileLines.Free;
-    FileLines := nil;
-  end
-  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
-    ExecutablePath := DEFAULT_WINDOWS_SHELL;
-    ProgramArgs.Add('/c');
-    ProgramArgs.Add(ProgramPath);
-  end;
-
-  ExitCode := 0;
-
-  if JBExecuteProgram(ExecutablePath,
-                      ProgramArgs,
-                      ScriptDirectory,
-                      ExitCode,
-                      StdOut,
-                      StdErr) then begin
-    if ExitCode = 0 then begin
-      Success := true;
-    end;
-  end;
-
-  if DebugMode then begin
-    writeLn('ExitCode = ' + IntToStr(ExitCode));
-    writeLn('StdOut = "' + StdOut + '"');
-    writeLn('StdErr = "' + StdErr + '"');
-  end;
-
-  ProgramArgs.Free;
-
-  RunProgram := Success;
+  RunProgram := RunProgram(ProgramPath, nil, StdOut);
 end;
 
 //*****************************************************************************
@@ -889,83 +816,8 @@ end;
 function TS3ExtStorageSystem.RunProgram(ProgramPath: String): Boolean;
 var
   StdOut: String;
-  StdErr: String;
-  Success: Boolean;
-  ExecutablePath: String;
-  FirstLine: String;
-  ProgramArgs: TStringList;
-  ExitCode: Integer;
-  FileLines: TStringList;
-  LineLength: Integer;
 begin
-  ProgramArgs := nil;
-  FileLines := nil;
-
-  StdOut := '';
-  StdErr := '';
-  Success := false;
-
-  if not JBFileExists(ProgramPath) then begin
-    writeLn('RunProgram: error ' + ProgramPath + ' does not exist');
-    RunProgram := false;
-    exit;
-  end;
-
-  ExecutablePath := ProgramPath;
-  ProgramArgs := TStringList.Create;
-
-  if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
-    FileLines := JBFileReadTextLines(ProgramPath);
-    if FileLines.Count = 0 then begin
-      FileLines.Free;
-      FileLines := nil;
-      writeLn('RunProgram: unable to read file ' +
-              ProgramPath);
-      RunProgram := false;
-      exit;
-    end;
-    FirstLine := FileLines[0];
-    if FirstLine.StartsWith('#!') then begin
-      LineLength := FirstLine.Length;
-      ExecutablePath := FirstLine.Substring(2, LineLength-2);
-    end
-    else begin
-      ExecutablePath := DEFAULT_POSIX_SHELL;
-    end;
-
-    ProgramArgs.Add(ProgramPath);
-
-    FileLines.Free;
-    FileLines := nil;
-  end
-  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
-    ExecutablePath := DEFAULT_WINDOWS_SHELL;
-    ProgramArgs.Add('/c');
-    ProgramArgs.Add(ProgramPath);
-  end;
-
-  ExitCode := 0;
-
-  if JBExecuteProgram(ExecutablePath,
-                      ProgramArgs,
-                      ScriptDirectory,
-                      ExitCode,
-                      StdOut,
-                      StdErr) then begin
-    if ExitCode = 0 then begin
-      Success := true;
-    end;
-  end;
-
-  if DebugMode then begin
-    writeLn('ExitCode = ' + IntToStr(ExitCode));
-    writeLn('StdOut = "' + StdOut + '"');
-    writeLn('StdErr = "' + StdErr + '"');
-  end;
-
-  ProgramArgs.Free;
-
-  RunProgram := Success;
+  RunProgram := RunProgram(ProgramPath, nil, StdOut);
 end;
 
 //*****************************************************************************
