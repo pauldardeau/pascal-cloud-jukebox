@@ -769,13 +769,6 @@ begin
                                      StdErr);
 
   if ProgramSuccess then begin
-    if DebugMode then begin
-      writeLn('ExitCode = ' + IntToStr(ExitCode));
-      writeLn('*********** START STDOUT **************');
-      writeLn(StdOut);
-      writeLn('*********** END STDOUT **************');
-    end;
-
     if ExitCode = 0 then begin
       if StdOut.Length > 0 then begin
         OutputLines := StdOut.Split(LineEnding);
@@ -791,6 +784,12 @@ begin
   end
   else begin
     writeLn('JBExecuteProgram failed');
+  end;
+
+  if DebugMode then begin
+    writeLn('ExitCode = ' + IntToStr(ExitCode));
+    writeLn('StdOut = "' + StdOut + '"');
+    writeLn('StdErr = "' + StdErr + '"');
   end;
 
   ProgramArgs.Free;
@@ -874,6 +873,12 @@ begin
     end;
   end;
 
+  if DebugMode then begin
+    writeLn('ExitCode = ' + IntToStr(ExitCode));
+    writeLn('StdOut = "' + StdOut + '"');
+    writeLn('StdErr = "' + StdErr + '"');
+  end;
+
   ProgramArgs.Free;
 
   RunProgram := Success;
@@ -950,6 +955,12 @@ begin
     if ExitCode = 0 then begin
       Success := true;
     end;
+  end;
+
+  if DebugMode then begin
+    writeLn('ExitCode = ' + IntToStr(ExitCode));
+    writeLn('StdOut = "' + StdOut + '"');
+    writeLn('StdErr = "' + StdErr + '"');
   end;
 
   ProgramArgs.Free;
