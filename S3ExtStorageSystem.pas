@@ -830,7 +830,6 @@ var
   FileText: String;
   KvpKeys: TStringList;
   KvpKey: String;
-  KvpValue: String;
   i: Integer;
 begin
   KvpKeys := nil;
@@ -858,8 +857,7 @@ begin
   KvpKeys := Kvp.GetKeys;
   for i := 0 to KvpKeys.Count-1 do begin
     KvpKey := KvpKeys[i];
-    KvpValue := Kvp.GetValue(KvpKey);
-    FileText := FileText.Replace(KvpKey, KvpValue);
+    FileText := FileText.Replace(KvpKey, Kvp.GetValue(KvpKey));
   end;
   KvpKeys.Free;
   KvpKeys := nil;
@@ -872,10 +870,10 @@ begin
 
   if not JBFileWriteAllText(RunScript, FileText) then begin
     PrepareRunScript := false;
-    exit;
+  end
+  else begin
+    PrepareRunScript := true;
   end;
-
-  PrepareRunScript := true;
 end;
 
 //*****************************************************************************
