@@ -864,9 +864,11 @@ begin
   KvpKeys.Free;
   KvpKeys := nil;
 
-  // uncommenting this next line can be helpful to quickly see how the
+  // this next line can be helpful to quickly see how the
   // scripts are being populated
-  //writeLn(FileText);
+  if DebugMode then begin
+    writeLn(FileText);
+  end;
 
   if not JBFileWriteAllText(RunScript, FileText) then begin
     PrepareRunScript := false;
