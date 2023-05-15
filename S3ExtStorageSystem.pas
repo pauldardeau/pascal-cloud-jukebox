@@ -714,6 +714,7 @@ begin
 
   ProgramSuccess := JBExecuteProgram(ExecutablePath,
                                      ProgramArgs,
+                                     ScriptDirectory,
                                      ExitCode,
                                      StdOut,
                                      StdErr);
@@ -814,6 +815,7 @@ begin
 
   if JBExecuteProgram(ExecutablePath,
                       ProgramArgs,
+                      ScriptDirectory,
                       ExitCode,
                       StdOut,
                       StdErr) then begin
@@ -890,6 +892,7 @@ begin
 
   if JBExecuteProgram(ExecutablePath,
                       ProgramArgs,
+                      ScriptDirectory,
                       ExitCode,
                       StdOut,
                       StdErr) then begin

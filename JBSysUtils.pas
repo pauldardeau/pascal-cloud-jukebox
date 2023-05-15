@@ -31,6 +31,7 @@ function JBFileCopy(Source: String;
                     Target: String): Boolean;
 function JBExecuteProgram(ProgramPath: String;
                           ProgramArgs: TStringList;
+                          WorkingDir: String;
                           out ExitCode: Integer;
                           out StdOut: String;
                           out StdErr: String): Boolean;
@@ -288,18 +289,31 @@ end;
 
 function JBExecuteProgram(ProgramPath: String;
                           ProgramArgs: TStringList;
+                          WorkingDir: String;
                           out ExitCode: Integer;
                           out StdOut: String;
                           out StdErr: String): Boolean;
 var
   Process: TProcess;
   i: Integer;
+{$IFDEF unix}
   StringList: TStringList;
+{$ELSE}
+  StdOutFilePath: String;
+  StdErrFilePath: String;
+{$ENDIF}
 begin
   StringList := nil;
   ExitCode := -1;
   StdOut := '';
   StdErr := '';
+
+{$IFDEF windows}
+  StdOutFilePath := JBPathJoin(WorkingDir, 'stdout.txt');
+  JBDeleteFileIfExists(StdOutFilePath);
+  StdErrFilePath := JBPathJoin(WorkingDir, 'stderr.txt');
+  JBDeleteFileIfExists(StdErrFilePath);
+{$ENDIF}
 
   try
     Process := TProcess.Create(nil);
@@ -309,12 +323,17 @@ begin
       Process.Parameters.Add(ProgramArgs[i]);
     end;
 
+{$IFDEF unix}
     Process.Options := Process.Options + [poUsePipes, poWaitOnExit];
+{$ELSE}
+    Process.Options := Process.Options + [poWaitOnExit];
+{$ENDIF}
 
     Process.Execute;
 
     ExitCode := Process.ExitCode;
 
+{$IFDEF unix}
     if Process.Output <> nil then begin
       StringList := TStringList.Create;
       StringList.LoadFromStream(Process.Output);
@@ -332,8 +351,20 @@ begin
       end;
       StringList.Free;
     end;
+{$ELSE}
+    if JBGetFileSize(StdOutFilePath) > 0 then begin
+      StdOut := JBFileReadAllText(StdOutFilePath);
+    end;
+    if JBGetFileSize(StdErrFilePath) > 0 then begin
+      StdErr := JBFileReadAllText(StdErrFilePath);
+    end;
+{$ENDIF}
   finally
     Process.Free;
+{$IFDEF windows}
+    JBDeleteFileIfExists(StdOutFilePath);
+    JBDeleteFileIfExists(StdErrFilePath);
+{$ENDIF}
   end;
 
   JBExecuteProgram := ExitCode = 0;

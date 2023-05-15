@@ -84,6 +84,7 @@ begin
 
       if JBExecuteProgram(Md5Exe,
                           ProgramArgs,
+                          '',
                           ExitCode,
                           StdOut,
                           StdErr) then begin
