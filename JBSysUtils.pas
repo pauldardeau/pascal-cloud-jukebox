@@ -307,11 +307,6 @@ begin
   StdOut := '';
   StdErr := '';
   
-  writeLn('ProgramPath: "' + ProgramPath + '"');
-  for i := 0 to ProgramArgs.Count-1 do begin
-    writeLn('Arg: ' + IntToStr(i+1) + ' "' + ProgramArgs[i] + '"');
-  end;
-
 {$IFDEF windows}
   if WorkingDir.Length > 0 then begin
     StdOutFilePath := JBPathJoin(WorkingDir, 'stdout.txt');
