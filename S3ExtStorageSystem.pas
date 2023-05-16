@@ -93,7 +93,8 @@ type
     procedure PopulateBucket(Kvp: TKeyValuePairs; BucketName: String);
     procedure PopulateObject(Kvp: TKeyValuePairs; ObjectName: String);
     function RunProgram(ProgramPath: String;
-                        ListOutputLines: TStringList): Boolean;
+                        ListOutputLines: TStringList;
+                        out StdOut: String): Boolean;
     function RunProgram(ProgramPath: String): Boolean;
     function RunProgram(ProgramPath: String; out StdOut: String): Boolean;
     function PrepareRunScript(ScriptTemplate: String;
@@ -160,6 +161,7 @@ var
   Kvp: TKeyValuePairs;
   ScriptTemplate: String;
   RunScript: String;
+  StdOut: String;
 {$IFDEF windows}
   ContainerList: TStringList;
   ContainerEntry: String;
@@ -178,7 +180,7 @@ begin
 
   try
     if PrepareRunScript(ScriptTemplate, RunScript, Kvp) then begin
-      if not RunProgram(RunScript, ListOfContainers) then begin
+      if not RunProgram(RunScript, ListOfContainers, StdOut) then begin
         ListOfContainers.Clear;
         writeLn('error: unable to run script');
       end
@@ -190,13 +192,13 @@ begin
           PosLastSpace := ContainerEntry.LastIndexOf(' ');
           if PosLastSpace > 0 then begin
             ContainerName := ContainerEntry.Substring(PosLastSpace+1).Trim;
-			if ContainerName.Length > 0 then begin
+            if ContainerName.Length > 0 then begin
               ContainerList.Add(ContainerName);
             end;
           end;
         end;
-		ListOfContainers.Free;
-		ListOfContainers := ContainerList;
+        ListOfContainers.Free;
+        ListOfContainers := ContainerList;
 {$ENDIF}
       end;
     end
@@ -314,6 +316,7 @@ var
   Kvp: TKeyValuePairs;
   ScriptTemplate: String;
   RunScript: String;
+  StdOut: String;
 {$IFDEF windows}
   ObjectList: TStringList;
   ObjectListing: String;
@@ -338,25 +341,25 @@ begin
 
   try
     if PrepareRunScript(ScriptTemplate, RunScript, Kvp) then begin
-      if not RunProgram(RunScript, ListObjects) then begin
+      if not RunProgram(RunScript, ListObjects, StdOut) then begin
         ListObjects.Clear;
         writeLn('error: unable to run program');
       end
-	  else begin
+      else begin
 {$IFDEF windows}
-	    ObjectList := TStringList.Create;
-		for i := 0 to ListObjects.Count-1 do begin
-		  ObjectListing := ListObjects[i].Trim;
-		  PosLastSpace := ObjectListing.LastIndexOf(' ');
-		  if PosLastSpace > 0 then begin
-		    ObjectName := ObjectListing.Substring(PosLastSpace+1).Trim;
-			ObjectList.Add(ObjectName);
-		  end;
-		end;
-		ListObjects.Free;
-		ListObjects := ObjectList;
+        ObjectList := TStringList.Create;
+        for i := 0 to ListObjects.Count-1 do begin
+          ObjectListing := ListObjects[i].Trim;
+          PosLastSpace := ObjectListing.LastIndexOf(' ');
+          if PosLastSpace > 0 then begin
+            ObjectName := ObjectListing.Substring(PosLastSpace+1).Trim;
+            ObjectList.Add(ObjectName);
+          end;
+        end;
+        ListObjects.Free;
+        ListObjects := ObjectList;
 {$ENDIF}
-	  end;
+      end;
     end
     else begin
       writeLn('error: unable to prepare run script');
@@ -693,9 +696,9 @@ end;
 //*****************************************************************************
 
 function TS3ExtStorageSystem.RunProgram(ProgramPath: String;
-                                        ListOutputLines: TStringList): Boolean;
+                                        ListOutputLines: TStringList;
+                                        out StdOut: String): Boolean;
 var
-  StdOut: String;
   StdErr: String;
   Success: Boolean;
   ExecutablePath: String;
@@ -747,16 +750,16 @@ begin
     else begin
       ExecutablePath := DEFAULT_POSIX_SHELL;
     end;
-    
-	ProgramArgs.Add(ProgramPath);
+
+    ProgramArgs.Add(ProgramPath);
 
     FileLines.Free;
     FileLines := nil;
   end
   else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
     ExecutablePath := DEFAULT_WINDOWS_SHELL;
-	ProgramArgs.Add('/c');
-	ProgramArgs.Add(ProgramPath);
+    ProgramArgs.Add('/c');
+    ProgramArgs.Add(ProgramPath);
   end;
 
   ExitCode := 0;
@@ -769,20 +772,15 @@ begin
                                      StdErr);
 
   if ProgramSuccess then begin
-    if DebugMode then begin
-      writeLn('ExitCode = ' + IntToStr(ExitCode));
-      writeLn('*********** START STDOUT **************');
-      writeLn(StdOut);
-      writeLn('*********** END STDOUT **************');
-    end;
-
     if ExitCode = 0 then begin
-      if StdOut.Length > 0 then begin
-        OutputLines := StdOut.Split(LineEnding);
-        for i := 0 to Length(OutputLines)-1 do begin
-          OutputLine := OutputLines[i];
-          if OutputLine.Length > 0 then begin
-            ListOutputLines.Add(OutputLine);
+      if ListOutputLines <> nil then begin
+        if StdOut.Length > 0 then begin
+          OutputLines := StdOut.Split(LineEnding);
+          for i := 0 to Length(OutputLines)-1 do begin
+            OutputLine := OutputLines[i];
+            if OutputLine.Length > 0 then begin
+              ListOutputLines.Add(OutputLine);
+            end;
           end;
         end;
       end;
@@ -791,6 +789,12 @@ begin
   end
   else begin
     writeLn('JBExecuteProgram failed');
+  end;
+
+  if DebugMode then begin
+    writeLn('ExitCode = ' + IntToStr(ExitCode));
+    writeLn('StdOut = "' + StdOut + '"');
+    writeLn('StdErr = "' + StdErr + '"');
   end;
 
   ProgramArgs.Free;
@@ -803,80 +807,8 @@ end;
 
 function TS3ExtStorageSystem.RunProgram(ProgramPath: String;
                                         out StdOut: String): Boolean;
-var
-  StdErr: String;
-  Success: Boolean;
-  ExecutablePath: String;
-  FileLines: TStringList;
-  FirstLine: String;
-  LineLength: Integer;
-  ProgramArgs: TStringList;
-  ExitCode: Integer;
 begin
-  FileLines := nil;
-  ProgramArgs := nil;
-
-  StdOut := '';
-  StdErr := '';
-  Success := false;
-
-  if not JBFileExists(ProgramPath) then begin
-    writeLn('RunProgram: error ' +
-            ProgramPath +
-            ' does not exist');
-    RunProgram := false;
-    exit;
-  end;
-
-  ExecutablePath := ProgramPath;
-  ProgramArgs := TStringList.Create;
-
-  if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
-    FileLines := JBFileReadTextLines(ProgramPath);
-    if FileLines.Count = 0 then begin
-      FileLines.Free;
-      FileLines := nil;
-      writeLn('RunProgram: unable to read file ' +
-              ProgramPath);
-      RunProgram := false;
-      exit;
-    end;
-    FirstLine := FileLines[0];
-    if FirstLine.StartsWith('#!') then begin
-      LineLength := FirstLine.Length;
-      ExecutablePath := FirstLine.Substring(2, LineLength-2);
-    end
-    else begin
-      ExecutablePath := DEFAULT_POSIX_SHELL;
-    end;
-	
-	ProgramArgs.Add(ProgramPath);
-	
-    FileLines.Free;
-    FileLines := nil;
-  end
-  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
-    ExecutablePath := DEFAULT_WINDOWS_SHELL;
-	ProgramArgs.Add('/c');
-	ProgramArgs.Add(ProgramPath);
-  end;
-
-  ExitCode := 0;
-
-  if JBExecuteProgram(ExecutablePath,
-                      ProgramArgs,
-                      ScriptDirectory,
-                      ExitCode,
-                      StdOut,
-                      StdErr) then begin
-    if ExitCode = 0 then begin
-      Success := true;
-    end;
-  end;
-
-  ProgramArgs.Free;
-
-  RunProgram := Success;
+  RunProgram := RunProgram(ProgramPath, nil, StdOut);
 end;
 
 //*****************************************************************************
@@ -884,77 +816,8 @@ end;
 function TS3ExtStorageSystem.RunProgram(ProgramPath: String): Boolean;
 var
   StdOut: String;
-  StdErr: String;
-  Success: Boolean;
-  ExecutablePath: String;
-  FirstLine: String;
-  ProgramArgs: TStringList;
-  ExitCode: Integer;
-  FileLines: TStringList;
-  LineLength: Integer;
 begin
-  ProgramArgs := nil;
-  FileLines := nil;
-
-  StdOut := '';
-  StdErr := '';
-  Success := false;
-
-  if not JBFileExists(ProgramPath) then begin
-    writeLn('RunProgram: error ' + ProgramPath + ' does not exist');
-    RunProgram := false;
-    exit;
-  end;
-
-  ExecutablePath := ProgramPath;
-  ProgramArgs := TStringList.Create;
-
-  if ProgramPath.EndsWith(SFX_SHELL_SCRIPT) then begin
-    FileLines := JBFileReadTextLines(ProgramPath);
-    if FileLines.Count = 0 then begin
-      FileLines.Free;
-      FileLines := nil;
-      writeLn('RunProgram: unable to read file ' +
-              ProgramPath);
-      RunProgram := false;
-      exit;
-    end;
-    FirstLine := FileLines[0];
-    if FirstLine.StartsWith('#!') then begin
-      LineLength := FirstLine.Length;
-      ExecutablePath := FirstLine.Substring(2, LineLength-2);
-    end
-    else begin
-      ExecutablePath := DEFAULT_POSIX_SHELL;
-    end;
-	
-	ProgramArgs.Add(ProgramPath);
-	
-    FileLines.Free;
-    FileLines := nil;
-  end
-  else if ProgramPath.EndsWith(SFX_BATCH_FILE) then begin
-    ExecutablePath := DEFAULT_WINDOWS_SHELL;
-	ProgramArgs.Add('/c');
-	ProgramArgs.Add(ProgramPath);
-  end;
-
-  ExitCode := 0;
-
-  if JBExecuteProgram(ExecutablePath,
-                      ProgramArgs,
-                      ScriptDirectory,
-                      ExitCode,
-                      StdOut,
-                      StdErr) then begin
-    if ExitCode = 0 then begin
-      Success := true;
-    end;
-  end;
-
-  ProgramArgs.Free;
-
-  RunProgram := Success;
+  RunProgram := RunProgram(ProgramPath, nil, StdOut);
 end;
 
 //*****************************************************************************
@@ -967,7 +830,6 @@ var
   FileText: String;
   KvpKeys: TStringList;
   KvpKey: String;
-  KvpValue: String;
   i: Integer;
 begin
   KvpKeys := nil;
@@ -993,24 +855,28 @@ begin
   end;
 
   KvpKeys := Kvp.GetKeys;
-  for i := 0 to KvpKeys.Count-1 do begin
-    KvpKey := KvpKeys[i];
-    KvpValue := Kvp.GetValue(KvpKey);
-    FileText := FileText.Replace(KvpKey, KvpValue);
-  end;
-  KvpKeys.Free;
-  KvpKeys := nil;
 
-  // uncommenting this next line can be helpful to quickly see how the
+  if KvpKeys <> nil then begin
+    for i := 0 to KvpKeys.Count-1 do begin
+      KvpKey := KvpKeys[i];
+      FileText := FileText.Replace(KvpKey, Kvp.GetValue(KvpKey));
+    end;
+    KvpKeys.Free;
+    KvpKeys := nil;
+  end;
+
+  // this next line can be helpful to quickly see how the
   // scripts are being populated
-  //writeLn(FileText);
+  if DebugMode then begin
+    writeLn(FileText);
+  end;
 
   if not JBFileWriteAllText(RunScript, FileText) then begin
     PrepareRunScript := false;
-    exit;
+  end
+  else begin
+    PrepareRunScript := true;
   end;
-
-  PrepareRunScript := true;
 end;
 
 //*****************************************************************************

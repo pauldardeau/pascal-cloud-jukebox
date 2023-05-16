@@ -306,17 +306,17 @@ begin
   ExitCode := -1;
   StdOut := '';
   StdErr := '';
-  
+
 {$IFDEF windows}
   if WorkingDir.Length > 0 then begin
     StdOutFilePath := JBPathJoin(WorkingDir, 'stdout.txt');
-	StdErrFilePath := JBPathJoin(WorkingDir, 'stderr.txt');
+    StdErrFilePath := JBPathJoin(WorkingDir, 'stderr.txt');
   end
   else begin
     StdOutFilePath := 'stdout.txt';
-	StdErrFilePath := 'stderr.txt';
+    StdErrFilePath := 'stderr.txt';
   end;
-  
+
   JBDeleteFileIfExists(StdOutFilePath);
   JBDeleteFileIfExists(StdErrFilePath);
 {$ELSE}
@@ -363,10 +363,10 @@ begin
     if JBGetFileSize(StdOutFilePath) > 0 then begin
       StdOut := JBFileReadAllText(StdOutFilePath);
     end;
-	
+
     if JBGetFileSize(StdErrFilePath) > 0 then begin
       StdErr := JBFileReadAllText(StdErrFilePath);
-	end;
+    end;
 {$ENDIF}
   finally
     Process.Free;
